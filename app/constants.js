@@ -177,9 +177,23 @@ export default Object.freeze({
             isOpen:true,
         },
         {
+            tag: "反向切换站点",
+            name: "softwareSiteReverseSwitch",
+            cmd: "CommandOrControl+Shift+Tab",
+            isGlobal:false,
+            isOpen:true,
+        },
+        {
             tag: "切换分组",
             name: "groupSiteSwitch",
             cmd: "CommandOrControl+`",
+            isGlobal:false,
+            isOpen:true,
+        },
+        {
+            tag: "反向切换分组",
+            name: "groupSiteReverseSwitch",
+            cmd: "CommandOrControl+Shift+`",
             isGlobal:false,
             isOpen:true,
         },

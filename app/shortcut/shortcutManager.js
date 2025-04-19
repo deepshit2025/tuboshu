@@ -114,6 +114,21 @@ class ShortcutManager{
         })
     }
 
+    softwareSiteReverseSwitch(){
+        const view = viewManager.getActiveView();
+        const menuView = windowManager.getMenuView();
+        menuView.webContents.focus();
+
+        lokiManager.then((manager) => {
+            const openMenus = manager.getGroupMenus().openMenus;
+            let idx = openMenus.findIndex(item => item.name === view.name);
+            if(idx === 0) idx = openMenus.length;
+
+            let menuView = windowManager.getMenuView();
+            menuView.webContents.send('auto:click', openMenus[idx-1]);
+        })
+    }
+
     groupSiteSwitch(){
         const menuView = windowManager.getMenuView();
         menuView.webContents.focus();
@@ -127,6 +142,24 @@ class ShortcutManager{
                 manager.resetGroup();
             }else{
                 manager.updateGroup({name:groups[idx+1].name, isOpen:true})
+            }
+            menuView.webContents.reload();
+        })
+    }
+
+    groupSiteReverseSwitch(){
+        const menuView = windowManager.getMenuView();
+        menuView.webContents.focus();
+
+        lokiManager.then((manager) => {
+            const groups = manager.getGroups();
+            if(groups.length === 0) return;
+
+            let idx = groups.findIndex(item => item.isOpen === true);
+            if(idx === 0) {
+                manager.updateGroup({name:groups[groups.length-1].name, isOpen:true});
+            }else{
+                manager.updateGroup({name:groups[idx-1].name, isOpen:true})
             }
             menuView.webContents.reload();
         })
