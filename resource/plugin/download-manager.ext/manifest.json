@@ -1,0 +1,20 @@
+{
+  "name": "download manager",
+  "version": "1.0",
+  "manifest_version": 3,
+  "description": "下载管理插件，显示下载进度和历史记录",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["downloadManager.js"],
+      "css": ["downloadManager.css"]
+    }
+  ],
+  "permissions": ["downloads", "storage", "activeTab"],
+  "web_accessible_resources": [
+    {
+      "resources": ["download-panel.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
