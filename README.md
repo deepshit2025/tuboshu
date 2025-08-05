@@ -1,7 +1,7 @@
 <p align="center">
     <img src="https://github.com/user-attachments/assets/578f95c0-882f-4f31-b5ab-f6b7228b2927" width=138/>
 </p>  
-<h1 align="center">Tuboshu（新增插件添加版）</h1>  
+<h1 align="center">Tuboshu</h1>  
 <p align="center"><strong>Transform Your Favorite Websites into Seamless Desktop Experiences✨!</strong></p>
 <p align="center"><strong>一款桌面应用转换工具，让你用快捷键魔法般控制任何网页应用！基于Electron构建，完全开源免费✨!</strong></p>
 
