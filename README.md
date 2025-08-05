@@ -1,7 +1,7 @@
 <p align="center">
     <img src="https://github.com/user-attachments/assets/578f95c0-882f-4f31-b5ab-f6b7228b2927" width=138/>
 </p>  
-<h1 align="center">Tuboshu</h1>  
+<h1 align="center">Tuboshu（新增插件添加版）</h1>  
 <p align="center"><strong>Transform Your Favorite Websites into Seamless Desktop Experiences✨!</strong></p>
 <p align="center"><strong>一款桌面应用转换工具，让你用快捷键魔法般控制任何网页应用！基于Electron构建，完全开源免费✨!</strong></p>
 
@@ -14,6 +14,7 @@
 - 📦 ​**便携打包** - 生成可执行文件（支持 Windows/macOS/Linux）
 - 🔒 ​**隐私保护** - 本地存储配置数据，无需云端同步
 - 🌍 ​**多平台支持** - 完美运行于主流操作系统
+- 🪵 **更多插件支持** - 新增记住密码可视化插件和下载管理可视化插件
 - 🎮**无需复杂配置即可自由添加站点**
 
 ![add-new](https://github.com/user-attachments/assets/a67944b0-5058-4623-bcc0-b0be3a0e73e1)
