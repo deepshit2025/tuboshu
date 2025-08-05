@@ -317,28 +317,7 @@
     font-style: italic;
 }
 
-.context-menu {
-    position: absolute;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    padding: 5px 0;
-    z-index: 10001;
-    display: none;
-}
 
-.context-item {
-    padding: 8px 16px;
-    cursor: pointer;
-    font-size: 14px;
-    color: #333;
-    transition: background-color 0.2s;
-}
-
-.context-item:hover {
-    background-color: #f8f9fa;
-}
 
 .download-item.history {
     flex-direction: column;

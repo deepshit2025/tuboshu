@@ -1,7 +1,7 @@
 class DownloadManager {
     constructor() {
         this.downloadHistory = [];
-        this.activeDownloads = new Map();
+        this.activeDownloads = {};
         this.panel = null;
         this.init();
     }
@@ -10,7 +10,6 @@ class DownloadManager {
         this.loadHistory();
         this.createDownloadPanel();
         this.setupDownloadListener();
-        this.setupContextMenu();
     }
 
     loadHistory() {
@@ -193,22 +192,7 @@ class DownloadManager {
     }
 
     setupDownloadListener() {
-        // 监听Chrome扩展API
-        if (chrome && chrome.downloads) {
-            chrome.downloads.onCreated.addListener((downloadItem) => {
-                this.handleDownloadStart(downloadItem);
-            });
-
-            chrome.downloads.onChanged.addListener((delta) => {
-                this.handleDownloadChange(delta);
-            });
-
-            chrome.downloads.onErased.addListener((downloadId) => {
-                this.handleDownloadRemoved(downloadId);
-            });
-        }
-        
-        // 监听普通网页环境的下载
+        // 只监听普通网页环境的下载
         this.interceptWebDownloads();
     }
     
@@ -326,7 +310,7 @@ class DownloadManager {
             if (event.lengthComputable) {
                 downloadItem.totalBytes = event.total;
                 downloadItem.bytesReceived = event.loaded;
-                this.activeDownloads.set(downloadItem.id, { ...downloadItem });
+                this.activeDownloads[downloadItem.id] = { ...downloadItem };
                 this.renderActiveDownloads();
             }
         };
@@ -367,7 +351,7 @@ class DownloadManager {
         
         xhr.onerror = () => {
             downloadItem.state = { current: 'interrupted' };
-            this.activeDownloads.delete(downloadItem.id);
+            delete this.activeDownloads[downloadItem.id];
             this.renderActiveDownloads();
             this.updateBadge();
             this.showNotification('下载失败', `${downloadItem.filename} 下载失败`);
@@ -473,90 +457,32 @@ class DownloadManager {
         return filename;
     }
 
-    setupContextMenu() {
-        document.addEventListener('contextmenu', (e) => {
-            if (e.target.tagName === 'A' && e.target.href) {
-                const linkUrl = e.target.href;
-                this.showContextMenu(e.clientX, e.clientY, linkUrl);
-                e.preventDefault();
-            }
-        });
 
-        document.addEventListener('click', () => {
-            this.hideContextMenu();
-        });
-    }
-
-    showContextMenu(x, y, url) {
-        let menu = document.getElementById('download-context-menu');
-        if (!menu) {
-            menu = document.createElement('div');
-            menu.id = 'download-context-menu';
-            menu.className = 'context-menu';
-            menu.innerHTML = `
-                <div class="context-item" onclick="downloadManager.downloadUrl('${url}')">
-                    下载此链接
-                </div>
-            `;
-            document.body.appendChild(menu);
-        }
-        
-        menu.style.left = x + 'px';
-        menu.style.top = y + 'px';
-        menu.style.display = 'block';
-    }
-
-    hideContextMenu() {
-        const menu = document.getElementById('download-context-menu');
-        if (menu) {
-            menu.style.display = 'none';
-        }
-    }
 
     downloadUrl(url) {
-        if (chrome && chrome.downloads) {
-            chrome.downloads.download({ url: url });
-        } else {
-            // 普通网页环境下使用startWebDownload
-            this.startWebDownload(url);
-        }
+        // 普通网页环境下使用startWebDownload
+        this.startWebDownload(url);
     }
 
     handleDownloadStart(downloadItem) {
-        this.activeDownloads.set(downloadItem.id, downloadItem);
+        this.activeDownloads[downloadItem.id] = downloadItem;
         this.renderActiveDownloads();
         this.updateBadge();
     }
 
-    handleDownloadChange(delta) {
-        const downloadId = delta.id;
-        if (chrome && chrome.downloads) {
-            chrome.downloads.search({ id: downloadId }, (results) => {
-                if (results && results[0]) {
-                    const downloadItem = results[0];
-                    
-                    if (downloadItem.state && downloadItem.state.current === 'complete') {
-                        this.completeDownload(downloadItem);
-                    } else {
-                        this.activeDownloads.set(downloadId, downloadItem);
-                        this.renderActiveDownloads();
-                    }
-                }
-            });
-        }
-    }
 
-    completeDownload(downloadItem) {
-        this.activeDownloads.delete(downloadItem.id);
+
+    completeDownload(downloadData) {
+        delete this.activeDownloads[downloadData.id];
         
         const historyItem = {
-            id: downloadItem.id,
-            filename: downloadItem.filename || '未知文件',
-            url: downloadItem.url,
-            totalBytes: downloadItem.totalBytes,
-            startTime: new Date(downloadItem.startTime).toLocaleString(),
+            id: downloadData.id,
+            filename: downloadData.filename || '未知文件',
+            url: downloadData.url,
+            totalBytes: downloadData.totalBytes || 0,
+            startTime: downloadData.startTime,
             endTime: new Date().toLocaleString(),
-            mime: downloadItem.mime
+            mime: downloadData.mime || 'application/octet-stream'
         };
 
         this.downloadHistory.unshift(historyItem);
@@ -570,23 +496,19 @@ class DownloadManager {
         this.showNotification('下载完成', `${historyItem.filename} 下载完成`);
     }
 
-    handleDownloadRemoved(downloadId) {
-        this.activeDownloads.delete(downloadId);
-        this.renderActiveDownloads();
-        this.updateBadge();
-    }
+
 
     renderActiveDownloads() {
         const container = document.getElementById('active-downloads');
         if (!container) return;
 
-        if (this.activeDownloads.size === 0) {
+        if (Object.keys(this.activeDownloads).length === 0) {
             container.innerHTML = '<div class="no-downloads">暂无进行中的下载</div>';
             return;
         }
 
         container.innerHTML = '';
-        this.activeDownloads.forEach((download) => {
+        Object.values(this.activeDownloads).forEach((download) => {
             const progress = download.totalBytes > 0 ? (download.bytesReceived / download.totalBytes) * 100 : 0;
             const item = document.createElement('div');
             item.className = 'download-item active';
@@ -660,10 +582,8 @@ class DownloadManager {
     }
 
     cancelDownload(downloadId) {
-        if (chrome && chrome.downloads) {
-            chrome.downloads.cancel(downloadId);
-        }
-        this.activeDownloads.delete(downloadId);
+        // 普通网页环境：直接从活跃下载中移除
+        delete this.activeDownloads[downloadId];
         this.renderActiveDownloads();
         this.updateBadge();
     }
@@ -683,7 +603,7 @@ class DownloadManager {
         const floatingBtn = document.getElementById('download-floating-btn');
         if (!badge || !floatingBtn) return;
         
-        const activeCount = this.activeDownloads.size;
+        const activeCount = Object.keys(this.activeDownloads).length;
         const prevCount = parseInt(badge.textContent) || 0;
         
         if (activeCount > 0) {
