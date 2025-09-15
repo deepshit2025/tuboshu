@@ -1,9 +1,12 @@
 {
   "name": "password manager",
-  "version": "1.0",
+  "version": "1.2",
   "manifest_version": 3,
-  "content_scripts": [{
-    "matches": ["<all_urls>"],
-    "js": ["pwManager.js"]
-  }]
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["pwManager.js", "floating-manager.js"]
+    }
+  ],
+  "permissions": ["storage"]
 }

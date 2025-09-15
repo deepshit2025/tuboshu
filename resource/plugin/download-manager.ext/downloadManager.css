@@ -1,0 +1,374 @@
+.download-panel {
+    position: fixed;
+    top: 50px;
+    right: 20px;
+    width: 400px;
+    max-height: 600px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-size: 14px;
+    display: none;
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    transition: all 0.3s ease;
+}
+
+.download-panel.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+
+
+#download-floating-btn {
+    position: fixed;
+    bottom: 85px;
+    right: 20px;
+    width: 55px;
+    height: 55px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 10002;
+    transition: all 0.3s ease;
+    user-select: none;
+    animation: none;
+}
+
+#download-floating-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+}
+
+#download-floating-btn:active {
+    transform: scale(0.95);
+}
+
+/* 下载开始时的动画效果 */
+@keyframes downloadPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    25% {
+        transform: scale(1.15);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.5);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.6);
+    }
+    75% {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+}
+
+@keyframes downloadGlow {
+    0%, 100% {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    50% {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+}
+
+#download-floating-btn.downloading {
+    animation: downloadPulse 0.6s ease-in-out, downloadGlow 1.5s ease-in-out infinite;
+}
+
+#download-floating-btn.new-download {
+    animation: downloadPulse 0.8s ease-in-out;
+}
+
+/* 图标旋转动画 */
+@keyframes iconRotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+#download-floating-btn.downloading .download-icon {
+    animation: iconRotate 2s linear infinite;
+}
+
+/* 徽章闪烁效果 */
+@keyframes badgeBlink {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.2);
+    }
+}
+
+#download-badge.new {
+    animation: badgeBlink 0.5s ease-in-out 3;
+}
+
+#download-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    min-width: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.download-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 8px 8px 0 0;
+}
+
+.download-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+    background-color: #e9ecef;
+    color: #333;
+}
+
+.download-tabs {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+    background: white;
+}
+
+.tab-btn:hover {
+    background: #f1f3f4;
+}
+
+.download-content {
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+.tab-content {
+    display: none;
+    padding: 15px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.download-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+}
+
+.download-item:hover {
+    background-color: #f8f9fa;
+}
+
+.download-item:last-child {
+    border-bottom: none;
+}
+
+.download-info {
+    flex: 1;
+    margin-right: 15px;
+}
+
+.filename {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background-color: #e9ecef;
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 8px 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #007bff;
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+.download-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #666;
+}
+
+.download-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 12px;
+    color: #666;
+}
+
+.download-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.cancel-btn,
+.download-actions button {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.cancel-btn:hover,
+.download-actions button:hover {
+    background-color: #f8f9fa;
+    border-color: #007bff;
+    color: #007bff;
+}
+
+.no-downloads,
+.no-history {
+    text-align: center;
+    color: #666;
+    padding: 40px 20px;
+    font-style: italic;
+}
+
+
+
+.download-item.history {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.download-item.history .download-info {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 10px;
+}
+
+.download-item.history .download-actions {
+    align-self: flex-end;
+}
+
+@media (max-width: 480px) {
+    .download-panel {
+        width: 90vw;
+        right: 5vw;
+        left: 5vw;
+    }
+    
+    .download-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .download-info {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .download-actions {
+        align-self: flex-end;
+    }
+}
+
+.download-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.download-panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.download-panel::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.download-panel::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
