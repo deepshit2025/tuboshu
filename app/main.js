@@ -1,5 +1,7 @@
 import path from 'path'
 import { app } from 'electron'
+import {initDatabase} from './store/database.js'
+import tbsDbManager from './store/tbsDbManager.js'
 import windowManager from './windowManager.js'
 import trayManager from'./trayManager.js'
 import shortcutManager from './shortcut/shortcutManager.js'
@@ -27,8 +29,12 @@ app.isQuitting = false;
 app.isMac = (process.platform === 'darwin');
 app.singleLock = app.requestSingleInstanceLock();
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   if (!app.singleLock) return app.quit();
+
+  // 先初始化数据库
+  await initDatabase(path.join(app.getPath('userData'), 'tuboshu.db'))
+  await tbsDbManager.init()
 
   windowManager.createWindow();
   trayManager.createTray();
