@@ -14,8 +14,6 @@ import AutoLaunch from "./utility/autoLaunch.js"
 app.commandLine.appendSwitch('disable-software-rasterizer');
 app.commandLine.appendSwitch('ignore-certificate-errors');
 
-app.commandLine.appendSwitch('lang', 'zh-CN');
-
 app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled')
 app.commandLine.appendSwitch('disable-features', 'IsolateOrigins,site-per-process')
 

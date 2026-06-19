@@ -86,12 +86,10 @@ class Utility {
         session.webRequest.onBeforeSendHeaders((details, callback) => {
             // 批量应用伪装 header，与 browserEnv 中的身份完全一致
             Object.assign(details.requestHeaders, {
-                'user-agent': headers['user-agent'],
                 'sec-ch-ua': headers['sec-ch-ua'],
                 'sec-ch-ua-mobile': headers['sec-ch-ua-mobile'],
                 'sec-ch-ua-platform': headers['sec-ch-ua-platform'],
                 'sec-ch-ua-platform-version': headers['sec-ch-ua-platform-version'],
-                'accept-language': headers['accept-language'],
             });
 
             callback({ requestHeaders: details.requestHeaders });
@@ -100,6 +98,10 @@ class Utility {
 
     static alterResponseHeader(view){
         const session = view.webContents.session;
+        // 每个 session 只注册一次，避免重复监听器堆积
+        if (session.__headerResponsePatched) return;
+        session.__headerResponsePatched = true;
+
         session.webRequest.onHeadersReceived((details, callback) => {
             const cspHeader = {
                 name: 'content-security-policy',
@@ -108,7 +110,7 @@ class Utility {
 
             const domains = ['yuque.com', 'wx.mail.qq.com'];
             if(domains.some(domain => details.url.toLowerCase().includes(domain))){
-                details.responseHeaders[cspHeader.name] = cspHeader.value;
+                details.responseHeaders[cspHeader.name] = [cspHeader.value];
             }
             callback({ responseHeaders: details.responseHeaders });
         });

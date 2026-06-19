@@ -153,7 +153,6 @@ class BrowserEnv {
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': osInfo.chromePlatformName,
         'sec-ch-ua-platform-version': `"${osInfo.platformVersion}"` || '"0.0.0"',
-        'accept-language': 'zh-CN,zh;q=0.9',
       },
     }
   }
