@@ -62,7 +62,7 @@ class DataSync{
 
     async clearStorageExcludingCookies() {
         const sites = tbsDbManager.getSites();
-        const typesToClear = ['appcache', 'filesystem', 'indexdb', 'localstorage', 'shadercache', 'websql', 'serviceworkers', 'cachestorage'];
+        const typesToClear = ['appcache', 'filesystem', 'indexdb', 'shadercache', 'websql', 'serviceworkers', 'cachestorage'];
 
         await Promise.all(sites.map(async (site) => {
             try {
@@ -84,7 +84,7 @@ class DataSync{
         })
 
         //清理缓存
-        ipcMain.on('dataSync:clear:cache', async () => {
+        ipcMain.handle('dataSync:clear:cache', async () => {
             await this.clearStorageExcludingCookies();
             return true;
         });

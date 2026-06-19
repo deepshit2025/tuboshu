@@ -21,7 +21,7 @@ contextBridge.exposeInMainWorld('myApi', {
     removeMenu: (menu) => ipcRenderer.send('remove:menu', menu),
     updateSetting: (setting) => ipcRenderer.send('update:setting', setting),
 
-    clearCache: () => ipcRenderer.send('dataSync:clear:cache'),
+    clearCache: () => ipcRenderer.invoke('dataSync:clear:cache'),
     getAppConfig: () => ipcRenderer.invoke('dataSync:get:data'),
     restoreAppConfig: (data) => ipcRenderer.send('dataSync:get:data', data),
 });

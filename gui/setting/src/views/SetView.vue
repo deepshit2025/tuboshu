@@ -158,12 +158,15 @@ const handleWinChange = (e) => {
 const handleBtnClick = async ()=> {
   btnLoading.value = true;
   btnText.value = '正在清除缓存';
-  await window.myApi.clearCache()
-  setTimeout(() => {
+  try {
+    await window.myApi.clearCache()
+    message.success('Tuboshu缓存已清除')
+  } catch (e) {
+    message.error('清除缓存失败: ' + e)
+  } finally {
     btnLoading.value = false;
     btnText.value = '清除缓存';
-    message.success(`Tuboshu缓存已清除`)
-    }, 2e3);
+  }
 }
 const  handleSponsorClick = () =>{
   isShow.value = true;
