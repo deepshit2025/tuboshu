@@ -86,6 +86,7 @@ function buildMainWorldScript() {
       productSub:          { get: function() { return '20030107'; }, configurable: true },
       appCodeName:         { get: function() { return 'Mozilla'; }, configurable: true },
       appName:             { get: function() { return 'Netscape'; }, configurable: true },
+      pdfViewerEnabled:    { get: function() { return true; }, configurable: true },
     };
     Object.keys(props).forEach(function(k) {
       try {
@@ -336,6 +337,9 @@ function buildMainWorldScript() {
             if (typeof cb === 'function') cb();
           },
           getManifest: function() { return { manifest_version: 3, name: '', version: '0.0' }; },
+          requestUpdateCheck: function(cb) {
+            if (typeof cb === 'function') cb({ status: 'no_update', version: '' });
+          },
           onMessage: { addListener: function() {}, removeListener: function() {} },
           onConnect: { addListener: function() {}, removeListener: function() {} },
           onInstalled: { addListener: function() {}, removeListener: function() {} }

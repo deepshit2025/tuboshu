@@ -25,8 +25,14 @@ app.isQuitting = false;
 app.isMac = (process.platform === 'darwin');
 app.singleLock = app.requestSingleInstanceLock();
 
+import browserEnv from './disguise/browserEnv.js'
+
 app.whenReady().then(async () => {
   if (!app.singleLock) return app.quit();
+
+  // 引擎级别设置 User-Agent（不影响 TLS 指纹，但让 navigator.userAgent 默认值正确）
+  const globalUA = browserEnv.getHeaders()['user-agent'];
+  if (globalUA) app.userAgentFallback = globalUA;
 
   // 先初始化数据库
   await initDatabase(path.join(app.getPath('userData'), 'tuboshu.db'))

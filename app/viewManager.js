@@ -108,7 +108,6 @@ class ViewManager {
         })
 
         if(isHttpAddr){
-            view.webContents.userAgent = headers['user-agent'];
             Utility.alterRequestHeader(view, headers)
             Utility.alterResponseHeader(view)
             Utility.loadExtensions(view).finally()
