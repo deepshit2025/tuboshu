@@ -1,4 +1,4 @@
-import { app, clipboard, screen} from 'electron'
+import { clipboard, screen} from 'electron'
 import windowManager from '../windowManager.js'
 import trayManager from '../trayManager.js'
 import viewManager from '../viewManager.js'
@@ -43,7 +43,11 @@ class ShortcutManager{
                 shortcutBase.register(shortcut.cmd, this[shortcut.name].bind(this), shortcut.isGlobal)
             }
         })
-        eventManager.on('replace:shortcut', (data, resolve) => {
+        // 防止监听器重复注册导致泄漏
+        if (this._shortcutListener) {
+            eventManager.off('replace:shortcut', this._shortcutListener);
+        }
+        this._shortcutListener = (data, resolve) => {
             if(data.shortcut.flag === true){
                 const res = this.isDisableShortcuts(data.shortcut)
                 delete data.shortcut.flag;
@@ -53,7 +57,8 @@ class ShortcutManager{
                 delete data.shortcut.flag;
                 resolve(res);
             }
-        });
+        };
+        eventManager.on('replace:shortcut', this._shortcutListener);
         this.openTransferSite();
         this.forceSystemExit();
     }
@@ -220,7 +225,7 @@ class ShortcutManager{
 
     forceSystemExit(){
         shortcutBase.register('CommandOrControl+Shift+Q', () => {
-            app.exit()
+            trayManager.reallyQuitApp();
         });
     }
 
@@ -229,6 +234,10 @@ class ShortcutManager{
     }
 
     destroy(){
+        if (this._shortcutListener) {
+            eventManager.off('replace:shortcut', this._shortcutListener);
+            this._shortcutListener = null;
+        }
         shortcutBase.unregisterAll();
     }
 }

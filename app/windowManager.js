@@ -177,8 +177,6 @@ class WindowManager{
 
         ipcMain.on('open:url', (event, site) => {
             viewManager.createNewView(site.url, site.name)
-            console.log('total children:', this.webView.children.length);
-            console.log('total Views', viewManager.views.length);
         })
 
         ipcMain.on('open:site', (event, site) => {

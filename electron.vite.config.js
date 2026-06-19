@@ -1,4 +1,4 @@
-import { defineConfig, externalizeDepsPlugin, bytecodePlugin } from 'electron-vite'
+import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import path from 'path'
 
 export default defineConfig({

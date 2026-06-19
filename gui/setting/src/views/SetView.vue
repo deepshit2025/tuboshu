@@ -41,8 +41,6 @@ const linkOpenMethod = [
 
 const getValue= (name, obj) => {
   let item = obj.value.find((item) => item.name === name);
-  if(typeof item.value === 'number') return item.value !== 0;
-  if(typeof item.value === 'string' && item.value === "0") return false;
   return item.value;
 }
 

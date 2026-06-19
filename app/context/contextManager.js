@@ -85,6 +85,7 @@ class ContextManager {
 
     clearUselessHistoryRecord(){
         const view = viewManager.getActiveView();
+        if (!view || !view.object || !view.object.webContents) return;
         const history = view.object.webContents.navigationHistory;
         const entries = history.getAllEntries();
         if(entries.length <= 1) return;
@@ -94,9 +95,9 @@ class ContextManager {
             if (item.url.toLowerCase().startsWith('file:')) acc.push(index);
             return acc;
         }, []);
-        indices.filter((index) => {
-            if(index !== activeIndex) history.removeEntryAtIndex(index);
-        })
+        // 降序删除：先删靠后的索引，不影响靠前索引
+        const toRemove = indices.filter((index) => index !== activeIndex);
+        toRemove.sort((a, b) => b - a).forEach((index) => history.removeEntryAtIndex(index));
     }
 
     goBack(){

@@ -26,8 +26,12 @@ class Utility {
     }
 
     static async fetchVersionLatest() {
-        const res =  await requestJson({url:versionUrl})
-        return res.data;
+        try {
+            const res = await requestJson({url: versionUrl});
+            return res.data;
+        } catch {
+            return {version: '', download_url: ''};
+        }
     }
 
     static async loadExtensions(view) {

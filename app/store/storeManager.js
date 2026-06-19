@@ -23,10 +23,17 @@ class StoreManager{
     }
 
     getSetting(key){
+        let val;
         if(this.store.hasSetting(key)){
-            return this.store.getSetting(key);
+            val = this.store.getSetting(key);
+        }else{
+            val = CONS.CONFIG[key]
         }
-        return CONS.CONFIG[key]
+        // 数字 0/1 → boolean
+        if (typeof val === 'number' && (val === 0 || val === 1)) {
+            return !!val;
+        }
+        return val;
     }
 
     updateSetting(setting){
