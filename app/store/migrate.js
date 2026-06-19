@@ -78,20 +78,6 @@ export function migrateFromLegacyDb(db, oldDbPath) {
       console.log(`[迁移] 已迁移 ${data.length} 条分组数据`)
     }
 
-    // 迁移 lnks
-    if (collections.lnks) {
-      const data = collections.lnks.data || []
-      for (const l of data) {
-        db.run(
-          `INSERT OR IGNORE INTO lnks (name, type, icon, exePath, args, "order")
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [l.name || '', l.type || '', l.icon || '',
-           l.exePath || '', l.args || '', l.order || 0]
-        )
-      }
-      console.log(`[迁移] 已迁移 ${data.length} 条快捷链接数据`)
-    }
-
     // 迁移 setting（使用 JSON.stringify 保持原始类型）
     if (collections.setting) {
       const data = collections.setting.data || []
