@@ -4,9 +4,6 @@ window.addEventListener('DOMContentLoaded', () => {
         const wrapper = document.getElementById('container');
         wrapper.addEventListener('click', handleNavItemClick);
     })
-
-    window.myUpload.init();
-    window.myToast.init();
 })
 
 function handleNavItemClick(event){
