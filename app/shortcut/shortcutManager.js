@@ -56,12 +56,6 @@ class ShortcutManager{
         });
         this.openTransferSite();
         this.forceSystemExit();
-        // Ctrl+B 改用全局快捷键（BaseWindow 不支持 Menu 加速键捕获）
-        shortcutBase.unregister('CommandOrControl+B');
-        shortcutBase.register('CommandOrControl+B', () => {
-            const win = windowManager.getWindow();
-            if (win && win.isFocused()) this.isMenuVisible();
-        }, true)
     }
 
     isDisableShortcuts(shortcut){
