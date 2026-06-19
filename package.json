@@ -48,13 +48,6 @@
         "filter": [
           "**/*"
         ]
-      },
-      {
-        "from": "./resource/lnk",
-        "to": "lnk",
-        "filter": [
-          "**/*"
-        ]
       }
     ],
     "asar": true,
