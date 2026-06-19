@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "douyin",
+  "version": "1.0",
+  "description": "douyin",
+  "permissions": [
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://*.douyin.com/*",
+    "*://*.tiktok.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+	     "*://*.douyin.com/*",
+		 "*://*.tiktok.com/*"
+	  ],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ]
+}

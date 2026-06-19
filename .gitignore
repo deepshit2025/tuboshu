@@ -4,3 +4,4 @@ node_modules/
 gui/setting/node_modules/
 loki.db*
 out/
+.codegraph/
