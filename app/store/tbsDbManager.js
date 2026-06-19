@@ -151,7 +151,7 @@ class TbsDbManager {
       `INSERT INTO sites (name, tag, url, img, isOpen, "order", jsCode, proxy)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [name, site.tag || '', site.url || '', site.img || '',
-       1, order, site.jsCode || '', site.proxy || '']
+       site.isOpen ? 1 : 0, order, site.jsCode || '', site.proxy || '']
     )
     persistSync()
     return { ...site, name, order }

@@ -89,7 +89,7 @@ const handleSaveJsCode = (element) => {
 
 const handleExportConfig = async () => {
   try{
-    const ret = window.myApi.exportConfig();
+    const ret = await window.myApi.exportConfig();
     if(ret === true) message.success('导出站点文件成功');
   }catch (error) {
     message.error('导出失败：'+error);
