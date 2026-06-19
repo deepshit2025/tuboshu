@@ -190,6 +190,9 @@ class ShortcutManager{
     }
 
     isMenuVisible(){
+        // 诊断弹窗：验证 Ctrl+B 是否被捕获
+        const { dialog } = require('electron');
+        dialog.showMessageBox({ message: 'Ctrl+B 已触发！isMenuVisible=' + storeManager.getSetting('isMenuVisible'), title: '诊断' });
         if(storeManager.getSetting('isMenuVisible')){
             storeManager.set('isMenuVisible', 0);
         }else{
