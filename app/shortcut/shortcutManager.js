@@ -36,7 +36,7 @@ class ShortcutManager{
     initShortcuts(){
         this.resetShortcutsData();
         tbsDbManager.getShortcuts().forEach((shortcut) => {
-            if(shortcut.isOpen === false){
+            if(!shortcut.isOpen){
                 return;
             }
             if(!shortcutBase.isRegistered(shortcut.cmd)){
@@ -60,13 +60,13 @@ class ShortcutManager{
 
     isDisableShortcuts(shortcut){
         //禁用快捷键
-        if((shortcut.isOpen === false) && shortcutBase.isRegistered(shortcut.cmd)){
+        if(!shortcut.isOpen && shortcutBase.isRegistered(shortcut.cmd)){
             shortcutBase.unregister(shortcut.cmd)
             return true;
         }
 
         //启用快捷键
-        if(shortcut.isOpen === true && !shortcutBase.isRegistered(shortcut.cmd)){
+        if(shortcut.isOpen && !shortcutBase.isRegistered(shortcut.cmd)){
             shortcutBase.register(shortcut.cmd, this[shortcut.name].bind(this))
             return true;
         }
@@ -128,6 +128,10 @@ class ShortcutManager{
 
     restoreDefaultWindow(){
         let win = windowManager.getWindow()
+        if (storeManager.getSetting('isFullScreen')) {
+            win.maximize();
+            return;
+        }
         const [width, height] = win.getSize();
         const origin = Layout.getWinSize();
 

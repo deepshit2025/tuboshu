@@ -56,7 +56,7 @@ const SCHEMA_SQL = `
 
 function queryAll(db, sql, params = []) {
   const stmt = db.prepare(sql)
-  if (params.length > 0) stmt.bind(params)
+  if (params.length > 0) stmt.bind(params.map(p => p === undefined ? null : p))
   const rows = []
   while (stmt.step()) {
     rows.push(stmt.getAsObject())
@@ -67,7 +67,7 @@ function queryAll(db, sql, params = []) {
 
 function queryOne(db, sql, params = []) {
   const stmt = db.prepare(sql)
-  if (params.length > 0) stmt.bind(params)
+  if (params.length > 0) stmt.bind(params.map(p => p === undefined ? null : p))
   let row = null
   if (stmt.step()) {
     row = stmt.getAsObject()
@@ -78,7 +78,7 @@ function queryOne(db, sql, params = []) {
 
 function exec(db, sql, params = []) {
   const stmt = db.prepare(sql)
-  if (params.length > 0) stmt.bind(params)
+  if (params.length > 0) stmt.bind(params.map(p => p === undefined ? null : p))
   stmt.step()
   stmt.free()
 }
@@ -128,7 +128,7 @@ class TbsDbManager {
   // ---------- sites ----------
 
   getSites() {
-    return queryAll(getDb(), 'SELECT * FROM sites ORDER BY "order" ASC')
+    return queryAll(getDb(), 'SELECT * FROM sites ORDER BY "order" ASC').map(s => ({ ...s, isOpen: !!s.isOpen }))
   }
 
   clearSites() {
@@ -137,7 +137,9 @@ class TbsDbManager {
   }
 
   getSite(name) {
-    return queryOne(getDb(), 'SELECT * FROM sites WHERE name = ?', [name])
+    const row = queryOne(getDb(), 'SELECT * FROM sites WHERE name = ?', [name])
+    if (row) row.isOpen = !!row.isOpen
+    return row
   }
 
   addSite(site) {
@@ -204,6 +206,7 @@ class TbsDbManager {
     const db = getDb()
     let sites = queryAll(db, 'SELECT * FROM sites ORDER BY "order" ASC')
     if (sites.length === 0) sites = CONS.SITES
+    sites = sites.map(s => ({ ...s, isOpen: !!s.isOpen }))
     return {
       openMenus: processImg(sites.filter(s => s.isOpen)),
       closeMenus: processImg(sites.filter(s => !s.isOpen)),
@@ -226,11 +229,13 @@ class TbsDbManager {
   // ---------- shortcuts ----------
 
   getShortcuts() {
-    return queryAll(getDb(), 'SELECT * FROM shortcuts ORDER BY isOpen DESC')
+    return queryAll(getDb(), 'SELECT * FROM shortcuts ORDER BY isOpen DESC').map(s => ({ ...s, isOpen: !!s.isOpen }))
   }
 
   getShortcut(name) {
-    return queryOne(getDb(), 'SELECT * FROM shortcuts WHERE name = ?', [name])
+    const row = queryOne(getDb(), 'SELECT * FROM shortcuts WHERE name = ?', [name])
+    if (row) row.isOpen = !!row.isOpen
+    return row
   }
 
   updateShortcut(shortcut) {
@@ -262,7 +267,7 @@ class TbsDbManager {
   // ---------- groups ----------
 
   getGroups() {
-    return queryAll(getDb(), 'SELECT * FROM groups_t')
+    return queryAll(getDb(), 'SELECT * FROM groups_t').map(g => ({ ...g, isOpen: !!g.isOpen }))
   }
 
   updateGroup(group) {

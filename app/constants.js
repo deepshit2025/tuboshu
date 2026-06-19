@@ -9,7 +9,9 @@ const appPath = path.join(___dirname, '..');
 // const SETTING_URL = app.isPackaged
 //     ? `file://${path.join(appPath, 'gui/dist/index.html')}`
 //     : 'http://localhost:5173/';
-const SETTING_URL = app.isPackaged ? 'http://tuboshu.upsort.com' : 'http://localhost:5173/';
+const SETTING_URL = app.isPackaged
+    ? `file://${path.join(appPath, 'gui/dist/index.html')}#/set`
+    : 'http://localhost:5173/';
 
 export default Object.freeze({
     APP:{
@@ -27,8 +29,8 @@ export default Object.freeze({
             width: 1024,
             height: 768,
         },
+        isFullScreen: 0,
         defaultMenuWidth: 50,
-        isWindowEdgeAdsorption: 0,
         isMemoryOptimizationEnabled:1,
         isMenuVisible:1,
         isOpenDevTools:0,

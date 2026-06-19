@@ -6,7 +6,6 @@ const settings = ref({})
 const isShow = ref(false);
 const btnLoading = ref(false);
 const btnText = ref("清除缓存");
-const isEdgeAdsorption = ref(false)
 const isMemoryOptimizationEnabled = ref(false)
 const isOpenDevTools = ref(false)
 const isOpenZoom = ref(false)
@@ -17,6 +16,7 @@ const systemTheme = ref("system")
 const leftMenuPosition = ref('left')
 const howLinkOpenMethod = ref('tuboshu')
 const defaultWindowSize = ref({width: 1024, height: 800})
+const isFullScreen = ref(false)
 
 const version = ref({
   version: '加载中...',
@@ -50,8 +50,8 @@ onMounted(async () => {
   version.value = await window.myApi.getVersion();
   settings.value = await window.myApi.getSettings();
 
-  isEdgeAdsorption.value = getValue('isWindowEdgeAdsorption', settings);
   isMemoryOptimizationEnabled.value = getValue('isMemoryOptimizationEnabled', settings);
+  isFullScreen.value = getValue('isFullScreen', settings);
   leftMenuPosition.value = getValue('leftMenuPosition', settings);
   systemTheme.value = getValue('systemTheme', settings);
   isMenuVisible.value = getValue('isMenuVisible', settings);
@@ -65,15 +65,14 @@ onMounted(async () => {
 
 
 
-const changeSwitch = async (val) => {
-  const setting = { name : 'isWindowEdgeAdsorption', value: val ? 1 : 0}
+const changeOptimize = async (val) => {
+  const setting = { name : 'isMemoryOptimizationEnabled', value: val ? 1 : 0}
   window.myApi.updateSetting(setting);
   message.success(`设置已更新,请重新启动`)
 }
 
-const changeOptimize = async (val) => {
-  const setting = { name : 'isMemoryOptimizationEnabled', value: val ? 1 : 0}
-  window.myApi.updateSetting(setting);
+const changeFullScreen = async (val) => {
+  await window.myApi.updateSetting({ name : 'isFullScreen', value: val ? 1 : 0});
   message.success(`设置已更新,请重新启动`)
 }
 
@@ -190,10 +189,12 @@ const handleClose = () =>{
             <n-input-group @change="handleWinChange">
               <n-input size="small"
                        v-model:value="defaultWindowSize.width"
+                       :disabled="isFullScreen"
                        :style="{ width: '20%' }"
                        placeholder="width"  /> x
               <n-input size="small"
                        v-model:value="defaultWindowSize.height"
+                       :disabled="isFullScreen"
                        :style="{ width: '20%' }"
                        placeholder="height" />
             </n-input-group>
@@ -224,12 +225,11 @@ const handleClose = () =>{
         </div>
 
         <div class="card">
-          <div class="vleft">边缘吸附：</div>
+          <div class="vleft">全屏启动：</div>
           <div class="vright">
             <n-switch size="medium"
-              v-model:value="isEdgeAdsorption"
-              @update:value="changeSwitch"
-              style="font-size:12px;" >
+                      v-model:value="isFullScreen"
+                      @update:value="changeFullScreen" style="font-size:12px;" >
               <template #checked>开启</template>
               <template #unchecked>关闭</template>
             </n-switch>

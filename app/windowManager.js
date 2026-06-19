@@ -1,4 +1,4 @@
-import {app, BaseWindow, View, screen, ipcMain, clipboard, WebContentsView, nativeTheme} from 'electron'
+import {app, BaseWindow, View, ipcMain, clipboard, WebContentsView, nativeTheme} from 'electron'
 import viewManager from './viewManager.js'
 import tbsDbManager from './store/tbsDbManager.js'
 import storeManager from './store/storeManager.js'
@@ -15,7 +15,6 @@ import AutoLaunch from "./utility/autoLaunch.js"
 
 class WindowManager{
 
-    isAdjusting = false;
     resizeTimer = null;
     cleanupTimer = null;
     constructor() {
@@ -79,6 +78,9 @@ class WindowManager{
         this.bindEvents();
         this.setSystemTheme();
         this.uselessSiteCleaner();
+        if (storeManager.getSetting('isFullScreen')) {
+            win.maximize();
+        }
         win.show();
     }
 
@@ -294,12 +296,6 @@ class WindowManager{
             }, 200);
         })
 
-        this.window.on('move', () => {
-            const res = storeManager.getSetting('isWindowEdgeAdsorption');
-            if(!res) return;
-            this.handleMove();
-        });
-
         this.window.on('focus', () => {
             this.handleResize();
         });
@@ -317,7 +313,6 @@ class WindowManager{
             this.window.removeAllListeners('resize');
             this.window.removeAllListeners('show');
             this.window.removeAllListeners('focus');
-            this.window.removeAllListeners('move');
             this.destroy();
         })
     }
@@ -330,45 +325,6 @@ class WindowManager{
         viewManager.views.forEach(view => {
             view.object.setBounds(layout.view);
         });
-    }
-
-    handleMove(){
-        if (this.isAdjusting) return;
-        const windowBounds = this.getWindow().getBounds();
-        const centerPoint = {
-            x: windowBounds.x + windowBounds.width / 2,
-            y: windowBounds.y + windowBounds.height / 2
-        };
-
-        const display = screen.getDisplayNearestPoint(centerPoint);
-        const workArea = display.workArea;
-        const scaleFactor = display.scaleFactor;
-        const threshold = 30 * scaleFactor;
-
-        // 计算窗口到左右边缘的距离
-        const leftEdgeDistance = windowBounds.x - workArea.x;
-        const rightEdgeDistance = (workArea.x + workArea.width) - (windowBounds.x + windowBounds.width);
-        let newBounds = { ...windowBounds};
-
-        if (Math.abs(leftEdgeDistance) <= threshold) {
-            Object.assign(newBounds, {
-                x: workArea.x,
-                y: workArea.y,
-                height: workArea.height
-            });
-        }
-        else if (Math.abs(rightEdgeDistance) <= threshold) {
-            Object.assign(newBounds, {
-                x: workArea.x + workArea.width - windowBounds.width,
-                y: workArea.y,
-                height: workArea.height
-            });
-        }
-        if (JSON.stringify(newBounds) !== JSON.stringify(windowBounds)) {
-            this.isAdjusting = true;
-            this.getWindow().setBounds(newBounds, true);
-            this.isAdjusting = false;
-        }
     }
 
     setSystemTheme(){
