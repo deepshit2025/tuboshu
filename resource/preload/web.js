@@ -64,32 +64,40 @@ function buildMainWorldScript() {
   var D = ${json};
 
   // ═══════════════════════════════════════════
-  // 1. navigator 基础属性
+  // 1. navigator 基础属性（逐个尝试定义，跳过 non-configurable 的属性）
   // ═══════════════════════════════════════════
-  Object.defineProperties(navigator, {
-    userAgent:           { get: function() { return D.ua; }, configurable: true },
-    appVersion:          { get: function() { return D.appVer; }, configurable: true },
-    platform:            { get: function() { return D.platform; }, configurable: true },
-    vendor:              { get: function() { return D.vendor; }, configurable: true },
-    webdriver:           { get: function() { return false; }, configurable: true },
-    language:            { get: function() { return D.language; }, configurable: true },
-    languages:           { get: function() { return D.languages.slice(); }, configurable: true },
-    hardwareConcurrency: { get: function() { return D.hwConcurrency; }, configurable: true },
-    deviceMemory:        { get: function() { return D.deviceMemory; }, configurable: true },
-    cookieEnabled:       { get: function() { return true; }, configurable: true },
-    doNotTrack:          { get: function() { return null; }, configurable: true },
-    maxTouchPoints:      { get: function() { return 0; }, configurable: true },
-    onLine:              { get: function() { return true; }, configurable: true },
-    product:             { get: function() { return 'Gecko'; }, configurable: true },
-    productSub:          { get: function() { return '20030107'; }, configurable: true },
-    appCodeName:         { get: function() { return 'Mozilla'; }, configurable: true },
-    appName:             { get: function() { return 'Netscape'; }, configurable: true },
-  });
+  (function() {
+    var props = {
+      userAgent:           { get: function() { return D.ua; }, configurable: true },
+      appVersion:          { get: function() { return D.appVer; }, configurable: true },
+      platform:            { get: function() { return D.platform; }, configurable: true },
+      vendor:              { get: function() { return D.vendor; }, configurable: true },
+      webdriver:           { get: function() { return false; }, configurable: true },
+      language:            { get: function() { return D.language; }, configurable: true },
+      languages:           { get: function() { return D.languages.slice(); }, configurable: true },
+      hardwareConcurrency: { get: function() { return D.hwConcurrency; }, configurable: true },
+      deviceMemory:        { get: function() { return D.deviceMemory; }, configurable: true },
+      cookieEnabled:       { get: function() { return true; }, configurable: true },
+      doNotTrack:          { get: function() { return null; }, configurable: true },
+      maxTouchPoints:      { get: function() { return 0; }, configurable: true },
+      onLine:              { get: function() { return true; }, configurable: true },
+      product:             { get: function() { return 'Gecko'; }, configurable: true },
+      productSub:          { get: function() { return '20030107'; }, configurable: true },
+      appCodeName:         { get: function() { return 'Mozilla'; }, configurable: true },
+      appName:             { get: function() { return 'Netscape'; }, configurable: true },
+    };
+    Object.keys(props).forEach(function(k) {
+      try {
+        Object.defineProperty(navigator, k, props[k]);
+      } catch(e) {}
+    });
+  })();
 
   // ═══════════════════════════════════════════
   // 2. navigator.userAgentData
   // ═══════════════════════════════════════════
-  var uad = {
+  try {
+    var uad = {
     brands: D.uadBrands,
     mobile: D.uadMobile,
     platform: D.uadPlatform,
@@ -114,6 +122,7 @@ function buildMainWorldScript() {
     get: function() { return uad; },
     configurable: true
   });
+  } catch(e) {}
 
   // ═══════════════════════════════════════════
   // 3. navigator.plugins (PluginArray)
