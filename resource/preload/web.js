@@ -293,100 +293,86 @@ function buildMainWorldScript() {
   } catch(e) {}
 
   // ═══════════════════════════════════════════
-  // 9. window.chrome 对象
+  // 9. window.chrome 对象（增强，不替换原生）
   // ═══════════════════════════════════════════
   try {
-    if (typeof window !== 'undefined' && typeof window.chrome === 'undefined') {
-      var chromeObj = {
-        app: {
-          isInstalled: false,
-          InstallState: { DISABLED: 'disabled', INSTALLED: 'installed', NOT_INSTALLED: 'not_installed' },
-          RunningState: { CANNOT_RUN: 'cannot_run', READY_TO_RUN: 'ready_to_run', RUNNING: 'running' }
-        },
-        csi: function() {
-          return { onloadT: Date.now(), startE: Date.now(), pageT: Date.now(), tran: 15 };
-        },
-        loadTimes: function() {
-          return {
-            requestTime: 0,
-            startLoadTime: Date.now(),
-            commitLoadTime: Date.now(),
-            finishDocumentLoadTime: Date.now(),
-            finishLoadTime: Date.now(),
-            firstPaintTime: Date.now(),
-            wasFetchedViaSpdy: true,
-            wasNpnNegotiated: true,
-            npnNegotiatedProtocol: 'h2',
-            wasAlternateProtocolAvailable: false,
-            connectionInfo: 'http/2'
-          };
-        },
-        runtime: {
-          lastError: undefined,
-          id: undefined,
-          connect: function() {
-            return {
-              name: '',
-              sender: { id: undefined, url: '', origin: '' },
-              postMessage: function() {},
-              onMessage: { addListener: function() {}, removeListener: function() {} },
-              onDisconnect: { addListener: function() {}, removeListener: function() {} }
-            };
-          },
-          sendMessage: function(extensionId, message, options, cb) {
-            if (typeof cb === 'function') cb();
-          },
-          getManifest: function() { return { manifest_version: 3, name: '', version: '0.0' }; },
-          requestUpdateCheck: function(cb) {
-            if (typeof cb === 'function') cb({ status: 'no_update', version: '' });
-          },
-          onMessage: { addListener: function() {}, removeListener: function() {} },
-          onConnect: { addListener: function() {}, removeListener: function() {} },
-          onInstalled: { addListener: function() {}, removeListener: function() {} }
-        },
-        webstore: {
-          onInstallStageChanged: { addListener: function() {}, removeListener: function() {} },
-          onDownloadProgress: { addListener: function() {}, removeListener: function() {} }
-        },
-        storage: {
-          local: {
-            get: function(keys, cb) { if (cb) cb({}); },
-            set: function(items, cb) { if (cb) cb(); },
-            remove: function(keys, cb) { if (cb) cb(); },
-            clear: function(cb) { if (cb) cb(); }
-          },
-          sync: {
-            get: function(keys, cb) { if (cb) cb({}); },
-            set: function(items, cb) { if (cb) cb(); },
-            remove: function(keys, cb) { if (cb) cb(); },
-            clear: function(cb) { if (cb) cb(); }
-          },
-          onChanged: { addListener: function() {}, removeListener: function() {} }
-        },
-        extension: {
-          getURL: function(path) { return path || ''; },
-          getBackgroundPage: function() { return null; },
-          getViews: function() { return []; },
-          isAllowedIncognitoAccess: function(cb) { if (cb) cb(false); },
-          isAllowedFileSchemeAccess: function(cb) { if (cb) cb(false); }
-        },
-        i18n: {
-          getMessage: function(name) { return name || ''; },
-          getUILanguage: function() { return 'zh-CN'; },
-          getAcceptLanguages: function(cb) { if (cb) cb(['zh-CN', 'en']); },
-          detectLanguage: function(text, cb) { if (cb) cb({ languages: [], isReliable: false }); }
-        },
-        sidePanel: {
-          setOptions: function() { return Promise.resolve(); },
-          getOptions: function() { return Promise.resolve({}); },
-          open: function() { return Promise.resolve(); }
-        }
+    if (typeof window.chrome === 'undefined') window.chrome = {};
+    var c = window.chrome;
+
+    // app
+    if (!c.app) c.app = {};
+    if (!c.app.isInstalled) c.app.isInstalled = false;
+    if (!c.app.InstallState) c.app.InstallState = { DISABLED: 'disabled', INSTALLED: 'installed', NOT_INSTALLED: 'not_installed' };
+    if (!c.app.RunningState) c.app.RunningState = { CANNOT_RUN: 'cannot_run', READY_TO_RUN: 'ready_to_run', RUNNING: 'running' };
+
+    // csi
+    if (!c.csi) c.csi = function() {
+      return { onloadT: Date.now(), startE: Date.now(), pageT: Date.now(), tran: 15 };
+    };
+
+    // loadTimes
+    if (!c.loadTimes) c.loadTimes = function() {
+      return {
+        requestTime: 0, startLoadTime: Date.now(), commitLoadTime: Date.now(),
+        finishDocumentLoadTime: Date.now(), finishLoadTime: Date.now(), firstPaintTime: Date.now(),
+        wasFetchedViaSpdy: true, wasNpnNegotiated: true, npnNegotiatedProtocol: 'h2',
+        wasAlternateProtocolAvailable: false, connectionInfo: 'http/2'
       };
-      Object.defineProperty(window, 'chrome', {
-        get: function() { return chromeObj; },
-        configurable: true
-      });
-    }
+    };
+
+    // runtime
+    if (!c.runtime) c.runtime = {};
+    var r = c.runtime;
+    if (r.lastError === undefined) r.lastError = undefined;
+    if (!r.id) r.id = undefined;
+    if (!r.connect) r.connect = function() {
+      return { name: '', sender: { id: undefined, url: '', origin: '' },
+        postMessage: function() {},
+        onMessage: { addListener: function() {}, removeListener: function() {} },
+        onDisconnect: { addListener: function() {}, removeListener: function() {} } };
+    };
+    if (!r.sendMessage) r.sendMessage = function(extensionId, message, options, cb) {
+      if (typeof cb === 'function') cb();
+    };
+    if (!r.getManifest) r.getManifest = function() { return { manifest_version: 3, name: '', version: '0.0' }; };
+    if (!r.requestUpdateCheck) r.requestUpdateCheck = function(cb) {
+      if (typeof cb === 'function') cb({ status: 'no_update', version: '' });
+    };
+    if (!r.onMessage) r.onMessage = { addListener: function() {}, removeListener: function() {} };
+    if (!r.onConnect) r.onConnect = { addListener: function() {}, removeListener: function() {} };
+    if (!r.onInstalled) r.onInstalled = { addListener: function() {}, removeListener: function() {} };
+
+    // webstore
+    if (!c.webstore) c.webstore = {};
+    if (!c.webstore.onInstallStageChanged) c.webstore.onInstallStageChanged = { addListener: function() {}, removeListener: function() {} };
+    if (!c.webstore.onDownloadProgress) c.webstore.onDownloadProgress = { addListener: function() {}, removeListener: function() {} };
+
+    // storage
+    if (!c.storage) c.storage = {};
+    if (!c.storage.local) c.storage.local = { get: function(keys, cb) { if (cb) cb({}); }, set: function(items, cb) { if (cb) cb(); }, remove: function(keys, cb) { if (cb) cb(); }, clear: function(cb) { if (cb) cb(); } };
+    if (!c.storage.sync) c.storage.sync = { get: function(keys, cb) { if (cb) cb({}); }, set: function(items, cb) { if (cb) cb(); }, remove: function(keys, cb) { if (cb) cb(); }, clear: function(cb) { if (cb) cb(); } };
+    if (!c.storage.onChanged) c.storage.onChanged = { addListener: function() {}, removeListener: function() {} };
+
+    // extension
+    if (!c.extension) c.extension = {};
+    if (!c.extension.getURL) c.extension.getURL = function(path) { return path || ''; };
+    if (!c.extension.getBackgroundPage) c.extension.getBackgroundPage = function() { return null; };
+    if (!c.extension.getViews) c.extension.getViews = function() { return []; };
+    if (!c.extension.isAllowedIncognitoAccess) c.extension.isAllowedIncognitoAccess = function(cb) { if (cb) cb(false); };
+    if (!c.extension.isAllowedFileSchemeAccess) c.extension.isAllowedFileSchemeAccess = function(cb) { if (cb) cb(false); };
+
+    // i18n
+    if (!c.i18n) c.i18n = {};
+    if (!c.i18n.getMessage) c.i18n.getMessage = function(name) { return name || ''; };
+    if (!c.i18n.getUILanguage) c.i18n.getUILanguage = function() { return 'zh-CN'; };
+    if (!c.i18n.getAcceptLanguages) c.i18n.getAcceptLanguages = function(cb) { if (cb) cb(['zh-CN', 'en']); };
+    if (!c.i18n.detectLanguage) c.i18n.detectLanguage = function(text, cb) { if (cb) cb({ languages: [], isReliable: false }); };
+
+    // sidePanel
+    if (!c.sidePanel) c.sidePanel = {};
+    if (!c.sidePanel.setOptions) c.sidePanel.setOptions = function() { return Promise.resolve(); };
+    if (!c.sidePanel.getOptions) c.sidePanel.getOptions = function() { return Promise.resolve({}); };
+    if (!c.sidePanel.open) c.sidePanel.open = function() { return Promise.resolve(); };
   } catch(e) {}
 
   // ═══════════════════════════════════════════
