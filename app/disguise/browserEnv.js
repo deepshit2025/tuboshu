@@ -88,14 +88,14 @@ class BrowserEnv {
 
     // ── Sec-CH-UA 品牌 ──
     const brands = [
-      { brand: 'Google Chrome', version: chromeMajor },
+      { brand: 'Not/A?Brand', version: '8' },
       { brand: 'Chromium', version: chromeMajor },
-      { brand: 'Not=A?Brand', version: '99' },
+      { brand: 'Google Chrome', version: chromeMajor },
     ]
     const fullVersionList = [
-      { brand: 'Google Chrome', version: chromeVersion },
+      { brand: 'Not/A?Brand', version: '99' },
       { brand: 'Chromium', version: chromeVersion },
-      { brand: 'Not=A?Brand', version: '99' },
+      { brand: 'Google Chrome', version: chromeVersion },
     ]
 
     return {

@@ -22,9 +22,9 @@ const chromeVersion = chromeVerMatch ? chromeVerMatch[1] : '134.0.6998.165';
 
 const userAgentData = navData.userAgentData || {};
 const uadBrands = userAgentData.brands || [
-  { brand: 'Google Chrome', version: chromeVersion.split('.')[0] },
+  { brand: 'Not/A?Brand', version: '8' },
   { brand: 'Chromium', version: chromeVersion.split('.')[0] },
-  { brand: 'Not=A?Brand', version: '99' },
+  { brand: 'Google Chrome', version: chromeVersion.split('.')[0] },
 ];
 
 // 构建完整的 fullVersionList
@@ -323,8 +323,18 @@ function buildMainWorldScript() {
         runtime: {
           lastError: undefined,
           id: undefined,
-          connect: function() { return null; },
-          sendMessage: function() {},
+          connect: function() {
+            return {
+              name: '',
+              sender: { id: undefined, url: '', origin: '' },
+              postMessage: function() {},
+              onMessage: { addListener: function() {}, removeListener: function() {} },
+              onDisconnect: { addListener: function() {}, removeListener: function() {} }
+            };
+          },
+          sendMessage: function(extensionId, message, options, cb) {
+            if (typeof cb === 'function') cb();
+          },
           getManifest: function() { return { manifest_version: 3, name: '', version: '0.0' }; },
           onMessage: { addListener: function() {}, removeListener: function() {} },
           onConnect: { addListener: function() {}, removeListener: function() {} },
