@@ -84,13 +84,6 @@ class Utility {
         session.__headerPatched = true;
 
         session.webRequest.onBeforeSendHeaders((details, callback) => {
-            // 对有跨域安全检查要求的特殊域名跳过改写（减少干扰）
-            const skipDomains = ['accounts.google.com', 'login.google.com'];
-            if (skipDomains.some(d => details.url.toLowerCase().includes(d))) {
-                callback({ requestHeaders: details.requestHeaders });
-                return;
-            }
-
             // 批量应用伪装 header，与 browserEnv 中的身份完全一致
             Object.assign(details.requestHeaders, {
                 'user-agent': headers['user-agent'],
