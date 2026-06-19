@@ -35,6 +35,9 @@ const fullVersionList = uadBrands.map(b => ({
 
 const uadPlatform = userAgentData.platform || 'Windows';
 const uadMobile = userAgentData.mobile ?? false;
+const uadPlatformVersion = userAgentData.platformVersion || '10.0.0';
+const uadArchitecture = userAgentData.architecture || 'x86';
+const uadBitness = userAgentData.bitness || '64';
 
 // ── 3. 构造注入代码（只用纯值，不内嵌正则） ──
 function buildMainWorldScript() {
@@ -52,6 +55,9 @@ function buildMainWorldScript() {
     uadBrands,
     uadPlatform,
     uadMobile,
+    uadPlatformVersion,
+    uadArchitecture,
+    uadBitness,
     fullVersionList,
     chromeVersion,
   };
@@ -105,11 +111,11 @@ function buildMainWorldScript() {
     getHighEntropyValues: function(hints) {
       var result = {};
       if (hints.indexOf('fullVersionList') !== -1) result.fullVersionList = D.fullVersionList;
-      if (hints.indexOf('platformVersion') !== -1) result.platformVersion = '';
+      if (hints.indexOf('platformVersion') !== -1) result.platformVersion = D.uadPlatformVersion;
       if (hints.indexOf('platform') !== -1) result.platform = D.uadPlatform;
-      if (hints.indexOf('architecture') !== -1) result.architecture = '';
+      if (hints.indexOf('architecture') !== -1) result.architecture = D.uadArchitecture;
       if (hints.indexOf('model') !== -1) result.model = '';
-      if (hints.indexOf('bitness') !== -1) result.bitness = '64';
+      if (hints.indexOf('bitness') !== -1) result.bitness = D.uadBitness;
       if (hints.indexOf('uaFullVersion') !== -1) result.uaFullVersion = D.chromeVersion;
       if (hints.indexOf('wow64') !== -1) result.wow64 = false;
       return Promise.resolve(result);
@@ -157,6 +163,15 @@ function buildMainWorldScript() {
         if (p && p.name === name) return p;
       }
       return null;
+    };
+    arr.refresh = function() { return; };
+    arr.toString = function() { return '[object PluginArray]'; };
+    arr[Symbol.iterator] = function() {
+      var idx = 0;
+      var self = this;
+      return {
+        next: function() { return idx < self.length ? { value: self[idx++], done: false } : { done: true }; }
+      };
     };
     arr.length = plugins.length;
     Object.defineProperty(navigator, 'plugins', {
@@ -208,6 +223,7 @@ function buildMainWorldScript() {
     downlinkMax: Infinity,
     saveData: false,
     type: 'cellular',
+    onchange: null,
     addEventListener: function() {},
     removeEventListener: function() {},
     dispatchEvent: function() { return true; }
@@ -245,14 +261,7 @@ function buildMainWorldScript() {
   // ═══════════════════════════════════════════
   try {
     if (navigator.permissions) {
-      var origQuery = navigator.permissions.query;
       navigator.permissions.query = function(desc) {
-        if (desc && desc.name === 'window-placement') {
-          return Promise.resolve({ state: 'denied', onchange: null });
-        }
-        if (origQuery) {
-          return origQuery.call(navigator.permissions, desc).then(function(r) { return r; });
-        }
         return Promise.resolve({ state: 'prompt', onchange: null });
       };
     }
@@ -317,9 +326,11 @@ function buildMainWorldScript() {
           };
         },
         runtime: {
+          lastError: undefined,
           id: undefined,
           connect: function() { return null; },
           sendMessage: function() {},
+          getManifest: function() { return { manifest_version: 3, name: '', version: '0.0' }; },
           onMessage: { addListener: function() {}, removeListener: function() {} },
           onConnect: { addListener: function() {}, removeListener: function() {} },
           onInstalled: { addListener: function() {}, removeListener: function() {} }

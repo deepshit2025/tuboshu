@@ -124,6 +124,9 @@ class BrowserEnv {
             brands,
             mobile: false,
             platform: osInfo.chromePlatformName,
+            platformVersion: osInfo.platformVersion,
+            architecture: osInfo.architecture,
+            bitness: osInfo.bitness,
             getBrands() {
               return Promise.resolve(brands)
             },
