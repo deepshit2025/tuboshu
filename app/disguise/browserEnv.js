@@ -193,7 +193,7 @@ class BrowserEnv {
         arch,
         navigatorPlatform: 'Win32',
         chromePlatformName: 'Windows',
-        platformVersion: isWin11 ? `${major}.0` : `${major}.${minor}`,
+        platformVersion: isWin11 ? '15.0.0' : '14.0.0',
         architecture: arch === 'arm64' ? 'arm' : 'x86',
         bitness: arch === 'ia32' ? '32' : '64',
         platformString: isWin11

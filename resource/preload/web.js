@@ -74,7 +74,6 @@ function buildMainWorldScript() {
     var props = {
       platform:            { get: function() { return D.platform; }, configurable: true },
       vendor:              { get: function() { return D.vendor; }, configurable: true },
-      webdriver:           { get: function() { return false; }, configurable: true },
       language:            { get: function() { return D.language; }, configurable: true },
       languages:           { get: function() { return D.languages.slice(); }, configurable: true },
       hardwareConcurrency: { get: function() { return D.hwConcurrency; }, configurable: true },
@@ -334,6 +333,39 @@ function buildMainWorldScript() {
         webstore: {
           onInstallStageChanged: { addListener: function() {}, removeListener: function() {} },
           onDownloadProgress: { addListener: function() {}, removeListener: function() {} }
+        },
+        storage: {
+          local: {
+            get: function(keys, cb) { if (cb) cb({}); },
+            set: function(items, cb) { if (cb) cb(); },
+            remove: function(keys, cb) { if (cb) cb(); },
+            clear: function(cb) { if (cb) cb(); }
+          },
+          sync: {
+            get: function(keys, cb) { if (cb) cb({}); },
+            set: function(items, cb) { if (cb) cb(); },
+            remove: function(keys, cb) { if (cb) cb(); },
+            clear: function(cb) { if (cb) cb(); }
+          },
+          onChanged: { addListener: function() {}, removeListener: function() {} }
+        },
+        extension: {
+          getURL: function(path) { return path || ''; },
+          getBackgroundPage: function() { return null; },
+          getViews: function() { return []; },
+          isAllowedIncognitoAccess: function(cb) { if (cb) cb(false); },
+          isAllowedFileSchemeAccess: function(cb) { if (cb) cb(false); }
+        },
+        i18n: {
+          getMessage: function(name) { return name || ''; },
+          getUILanguage: function() { return 'zh-CN'; },
+          getAcceptLanguages: function(cb) { if (cb) cb(['zh-CN', 'en']); },
+          detectLanguage: function(text, cb) { if (cb) cb({ languages: [], isReliable: false }); }
+        },
+        sidePanel: {
+          setOptions: function() { return Promise.resolve(); },
+          getOptions: function() { return Promise.resolve({}); },
+          open: function() { return Promise.resolve(); }
         }
       };
       Object.defineProperty(window, 'chrome', {
