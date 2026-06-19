@@ -25,10 +25,21 @@ contextBridge.exposeInMainWorld('myApi', {
     getAppConfig: () => ipcRenderer.invoke('dataSync:get:data'),
     restoreAppConfig: (data) => ipcRenderer.send('dataSync:get:data', data),
 
-    // 剪贴板历史
+    // 文本
     getClipboardHistory: (keyword) => ipcRenderer.invoke('clipboard:history', keyword),
     clearClipboardHistory: () => ipcRenderer.invoke('clipboard:clear'),
     deleteClipboardRecord: (id) => ipcRenderer.invoke('clipboard:delete', id),
+
+    // 图片
+    getClipboardImages: () => ipcRenderer.invoke('clipboard:images'),
+    deleteClipboardImage: (id) => ipcRenderer.invoke('clipboard:image:delete', id),
+    clearClipboardImages: () => ipcRenderer.invoke('clipboard:images:clear'),
+
+    // 文件
+    getClipboardFiles: () => ipcRenderer.invoke('clipboard:files'),
+    deleteClipboardFile: (id) => ipcRenderer.invoke('clipboard:file:delete', id),
+    clearClipboardFiles: () => ipcRenderer.invoke('clipboard:files:clear'),
+
     toggleClipboardWatch: (enabled) => ipcRenderer.invoke('clipboard:toggle', enabled),
 });
 

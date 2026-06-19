@@ -50,7 +50,20 @@ const SCHEMA_SQL = `
     timestamp INTEGER NOT NULL,
     source    TEXT NOT NULL DEFAULT ''
   );
-  CREATE INDEX IF NOT EXISTS idx_clipboard_ts ON clipboard_history(timestamp DESC);`
+  CREATE INDEX IF NOT EXISTS idx_clipboard_ts ON clipboard_history(timestamp DESC);
+  CREATE TABLE IF NOT EXISTS clipboard_images (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    file_path TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    source    TEXT NOT NULL DEFAULT ''
+  );
+  CREATE TABLE IF NOT EXISTS clipboard_files (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    file_path   TEXT NOT NULL,
+    origin_name TEXT NOT NULL DEFAULT '',
+    timestamp   INTEGER NOT NULL,
+    source      TEXT NOT NULL DEFAULT ''
+  );`
 
 function queryAll(db, sql, params = []) {
   const stmt = db.prepare(sql)
@@ -364,6 +377,64 @@ class TbsDbManager {
       'SELECT content FROM clipboard_history ORDER BY timestamp DESC LIMIT 1'
     )
     return row?.content || ''
+  }
+
+  // ---------- clipboard images ----------
+
+  addClipboardImage(filePath) {
+    const db = getDb()
+    exec(db,
+      `INSERT INTO clipboard_images (file_path, timestamp, source)
+       VALUES (?, ?, ?)`,
+      [filePath, Date.now(), '']
+    )
+    persistSync()
+  }
+
+  getClipboardImages(limit = 200) {
+    return queryAll(getDb(),
+      'SELECT * FROM clipboard_images ORDER BY timestamp DESC LIMIT ?',
+      [limit]
+    )
+  }
+
+  removeClipboardImage(id) {
+    getDb().run('DELETE FROM clipboard_images WHERE id = ?', [id])
+    persistSync()
+  }
+
+  clearClipboardImages() {
+    getDb().run('DELETE FROM clipboard_images')
+    persistSync()
+  }
+
+  // ---------- clipboard files ----------
+
+  addClipboardFile(filePath, originName) {
+    const db = getDb()
+    exec(db,
+      `INSERT INTO clipboard_files (file_path, origin_name, timestamp, source)
+       VALUES (?, ?, ?, ?)`,
+      [filePath, originName, Date.now(), '']
+    )
+    persistSync()
+  }
+
+  getClipboardFiles(limit = 200) {
+    return queryAll(getDb(),
+      'SELECT * FROM clipboard_files ORDER BY timestamp DESC LIMIT ?',
+      [limit]
+    )
+  }
+
+  removeClipboardFile(id) {
+    getDb().run('DELETE FROM clipboard_files WHERE id = ?', [id])
+    persistSync()
+  }
+
+  clearClipboardFiles() {
+    getDb().run('DELETE FROM clipboard_files')
+    persistSync()
   }
 
   // ---------- setting（使用 JSON.stringify/parse 保持类型）----------

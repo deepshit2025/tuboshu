@@ -2,29 +2,53 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const message = useMessage()
-const list = ref([])
 const keyword = ref('')
 const loading = ref(false)
 const isWatchEnabled = ref(false)
+const activeTab = ref('text')
+
+// 文本
+const textList = ref([])
+// 图片
+const imageList = ref([])
+// 文件
+const fileList = ref([])
+
 let pollTimer = null
 
-const loadData = async () => {
+const loadText = async () => {
   try {
-    list.value = await window.myApi.getClipboardHistory(keyword.value)
-  } catch (e) {
-    // 静默处理
-  }
+    textList.value = await window.myApi.getClipboardHistory(keyword.value)
+  } catch {}
+}
+
+const loadImages = async () => {
+  try {
+    imageList.value = await window.myApi.getClipboardImages()
+  } catch {}
+}
+
+const loadFiles = async () => {
+  try {
+    fileList.value = await window.myApi.getClipboardFiles()
+  } catch {}
+}
+
+const loadAll = async () => {
+  loading.value = true
+  await Promise.all([loadText(), loadImages(), loadFiles()])
+  loading.value = false
 }
 
 const handleSearch = () => {
-  loadData()
+  loadText()
 }
 
-const handleDelete = async (id) => {
+// 文本操作
+const handleDeleteText = async (id) => {
   try {
     await window.myApi.deleteClipboardRecord(id)
-    list.value = list.value.filter(item => item.id !== id)
-    message.success('已删除')
+    textList.value = textList.value.filter(item => item.id !== id)
   } catch (e) {
     message.error('删除失败: ' + e)
   }
@@ -33,9 +57,29 @@ const handleDelete = async (id) => {
 const handleCopy = async (content) => {
   try {
     await navigator.clipboard.writeText(content)
-    message.success('已复制到剪贴板')
+    message.success('已复制')
   } catch {
     message.error('复制失败')
+  }
+}
+
+// 图片操作
+const handleDeleteImage = async (id) => {
+  try {
+    await window.myApi.deleteClipboardImage(id)
+    imageList.value = imageList.value.filter(item => item.id !== id)
+  } catch (e) {
+    message.error('删除失败: ' + e)
+  }
+}
+
+// 文件操作
+const handleDeleteFile = async (id) => {
+  try {
+    await window.myApi.deleteClipboardFile(id)
+    fileList.value = fileList.value.filter(item => item.id !== id)
+  } catch (e) {
+    message.error('删除失败: ' + e)
   }
 }
 
@@ -56,19 +100,17 @@ const formatTime = (ts) => {
 }
 
 onMounted(async () => {
-  await loadData()
-  // 读取当前启用的状态
+  await loadAll()
   try {
     const settings = await window.myApi.getSettings()
     const item = settings.find(s => s.name === 'clipboardWatchEnabled')
     if (item) isWatchEnabled.value = item.value
   } catch {}
 
-  // 页面活跃时每 2 秒轮询新内容
   pollTimer = setInterval(() => {
     if (document.hidden) return
-    loadData()
-  }, 2000)
+    loadAll()
+  }, 3000)
 })
 
 onUnmounted(() => {
@@ -86,19 +128,27 @@ onUnmounted(() => {
     </n-alert>
 
     <n-card embedded :bordered="true" style="margin-bottom: 1rem;">
-      <div class="toolbar">
+      <div style="display: flex; align-items: center; gap: 10px;">
         <n-switch size="medium" :value="isWatchEnabled" @update:value="handleToggleWatch">
           <template #checked>监控中</template>
           <template #unchecked>已关闭</template>
         </n-switch>
         <span style="font-size: 13px; color: #888;">
-          {{ isWatchEnabled ? '正在后台记录剪贴板变化，关闭后停止记录' : '开启后将自动记录剪贴板内容' }}
+          {{ isWatchEnabled ? '后台自动识别文本/图片/文件并分类记录' : '开启后将自动记录剪贴板内容' }}
         </span>
       </div>
     </n-card>
 
-    <n-card embedded :bordered="true">
-      <div class="toolbar">
+    <!-- 分类标签 -->
+    <n-tabs type="line" v-model:value="activeTab" style="margin-bottom: 12px;">
+      <n-tab name="text" tab="文本" :disabled="textList.length === 0">文字 ({{ textList.length }})</n-tab>
+      <n-tab name="image" tab="图片" :disabled="imageList.length === 0">图片 ({{ imageList.length }})</n-tab>
+      <n-tab name="file" tab="文件" :disabled="fileList.length === 0">文件 ({{ fileList.length }})</n-tab>
+    </n-tabs>
+
+    <!-- 文本区域 -->
+    <n-card v-show="activeTab === 'text'" embedded :bordered="true">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
         <n-input-group>
           <n-input
             size="small"
@@ -113,17 +163,50 @@ onUnmounted(() => {
       </div>
 
       <n-spin :show="loading">
-        <n-empty v-if="!loading && list.length === 0" description="暂无剪贴板记录" style="padding: 40px;" />
-
+        <n-empty v-if="!loading && textList.length === 0" description="暂无文本记录" style="padding: 40px;" />
         <n-list v-else>
-          <n-list-item v-for="item in list" :key="item.id">
+          <n-list-item v-for="item in textList" :key="'t'+item.id">
             <template #prefix>
               <div class="item-time">{{ formatTime(item.timestamp) }}</div>
             </template>
             <div class="item-content">{{ item.content }}</div>
             <template #suffix>
               <n-button size="tiny" @click="handleCopy(item.content)" style="margin-right: 6px;">复制</n-button>
-              <n-button size="tiny" tertiary round @click="handleDelete(item.id)">✕</n-button>
+              <n-button size="tiny" tertiary round @click="handleDeleteText(item.id)">✕</n-button>
+            </template>
+          </n-list-item>
+        </n-list>
+      </n-spin>
+    </n-card>
+
+    <!-- 图片区域 -->
+    <n-card v-show="activeTab === 'image'" embedded :bordered="true">
+      <n-spin :show="loading">
+        <n-empty v-if="!loading && imageList.length === 0" description="暂无图片记录" style="padding: 40px;" />
+        <div v-else class="image-grid">
+          <div v-for="item in imageList" :key="'i'+item.id" class="image-item">
+            <img :src="item.dataUrl" class="image-thumb" @click="handleCopy(item.dataUrl)" />
+            <div class="image-info">
+              <span class="item-time">{{ formatTime(item.timestamp) }}</span>
+              <n-button size="tiny" tertiary round @click="handleDeleteImage(item.id)">✕</n-button>
+            </div>
+          </div>
+        </div>
+      </n-spin>
+    </n-card>
+
+    <!-- 文件区域 -->
+    <n-card v-show="activeTab === 'file'" embedded :bordered="true">
+      <n-spin :show="loading">
+        <n-empty v-if="!loading && fileList.length === 0" description="暂无文件记录" style="padding: 40px;" />
+        <n-list v-else>
+          <n-list-item v-for="item in fileList" :key="'f'+item.id">
+            <template #prefix>
+              <div class="item-time">{{ formatTime(item.timestamp) }}</div>
+            </template>
+            <div class="item-content">{{ item.origin_name || item.file_path }}</div>
+            <template #suffix>
+              <n-button size="tiny" tertiary round @click="handleDeleteFile(item.id)">✕</n-button>
             </template>
           </n-list-item>
         </n-list>
@@ -133,11 +216,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
 .item-time {
   white-space: nowrap;
   font-size: 12px;
@@ -149,5 +227,32 @@ onUnmounted(() => {
   font-size: 14px;
   line-height: 1.5;
   color: var(--text-color);
+}
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+.image-item {
+  border: 1px solid var(--new-color-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.image-thumb {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  cursor: pointer;
+  display: block;
+}
+.image-thumb:hover {
+  opacity: 0.85;
+}
+.image-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  font-size: 12px;
 }
 </style>
