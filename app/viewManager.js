@@ -69,10 +69,16 @@ class ViewManager {
             if (this.views[i].name === name.toLowerCase()) {
                 this.views[i].time = timestamp;
                 this.views[i].object.setVisible(true)
+                if (this.parentView) {
+                    this.parentView.addChildView(this.views[i].object);
+                }
                 this.views[i].object.webContents.focus();
                 eventManager.emit('set:title', this.views[i].object.webContents.getTitle());
             }else{
                 this.views[i].object.setVisible(false)
+                if (this.parentView) {
+                    this.parentView.removeChildView(this.views[i].object);
+                }
             }
         }
     }
@@ -145,7 +151,12 @@ class ViewManager {
             object: view
         }
 
-        this.views.forEach(view => view.object.setVisible(false))
+        this.views.forEach(view => {
+            view.object.setVisible(false)
+            if (this.parentView) {
+                this.parentView.removeChildView(view.object);
+            }
+        })
         this.addView(viewItem)
         eventManager.emit('layout:resize', {view: viewItem});
 
