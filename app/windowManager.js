@@ -7,7 +7,6 @@ import fetchIcon from './utility/fetchIcon.js'
 import CONS from './constants.js'
 import dataExport from './utility/dataExport.js'
 import dataSync from './utility/dataSync.js'
-import winLnk from "./utility/winLnk.js";
 import Layout from "./utility/layout.js"
 import Utility from "./utility/utility.js";
 import AutoLaunch from "./utility/autoLaunch.js"
@@ -86,7 +85,6 @@ class WindowManager{
 
     bindIpcMain(){
 
-        winLnk.bindIpcMain();
         dataExport.bindIpcMain();
         dataSync.bindIpcMain();
 

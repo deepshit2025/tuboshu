@@ -112,54 +112,6 @@ body {
     color: var(--text-color);
 }
 
-/* 改进后的关闭按钮样式 */
-.close-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    z-index: 1;
-    cursor: pointer;
-    background-color: transparent;
-    border: none;
-    outline: none;
-}
-
-.close-btn::before, .close-btn::after {
-    content: '';
-    position: absolute;
-    width: 14px;
-    height: 1px;
-    background-color: var(--text-color);
-    transition: background-color 0.2s ease;
-}
-
-.close-btn::before {
-    transform: rotate(45deg);
-}
-
-.close-btn::after {
-    transform: rotate(-45deg);
-}
-
-.icon-item:hover .close-btn {
-    opacity: 0.6;
-}
-
-.close-btn:hover {
-    opacity: 1 !important;
-}
-
-.close-btn:hover::before, .close-btn:hover::after {
-    background-color: #ff4444;
-}
-
 @media (max-width: 768px) {
     .container {
         grid-template-columns: repeat(2, 1fr);

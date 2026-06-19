@@ -7,18 +7,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     window.myUpload.init();
     window.myToast.init();
-    initLnkData();
 })
-
-document.addEventListener('file-path',  async (e) => {
-    try{
-        await window.myApi.addLnk(e.detail.path);
-        initLnkData();
-        myToast.success("操作成功")
-    }catch (e){
-        myToast.error(e.message)
-    }
-});
 
 function handleNavItemClick(event){
     const isItemClicked = event.target.closest(".icon-item");
@@ -49,56 +38,3 @@ function updateMenu(menus, pid) {
 }
 
 
-function initLnkData() {
-    window.myApi.getLnks().then((lnks) => {
-        updateLnk(lnks, "lnkBox");
-        const wrapper = document.getElementById('lnkBox');
-        wrapper.addEventListener('click', handleLnkItemClick);
-    })
-}
-
-function handleLnkItemClick(event){
-
-    const closeBtn = event.target.closest('.close-btn');
-    if (closeBtn) {
-        event.stopPropagation();
-        const iconItem = closeBtn.closest('.icon-item');
-        window.myApi.removeLnk(iconItem.dataset.name).then(() => {
-            initLnkData();
-        })
-        return false;
-    }
-
-    const isItemClicked = event.target.closest(".icon-item");
-    if (isItemClicked) {
-        let element = event.target;
-        while (element && element !== event.currentTarget) {
-            if (element.classList.contains('icon-item')) {
-                window.myApi.openFile(element.dataset.url);
-                break;
-            }
-            element = element.parentNode;
-        }
-    }
-}
-
-function updateLnk(lnks, pid) {
-    const box = document.getElementById(pid);
-    box.innerHTML="";
-    lnks.forEach(item => {
-        let navItem = `
-                <div data-url="${item.exePath}" data-name="${item.name}" class="icon-item">
-                    <button data-name="${item.name}" class="close-btn" aria-label="Close"></button>
-                    <div class="icon"><img src="${item.icon}" alt="${item.name}"></div>
-                    <span class="icon-label">${resetName(item.name)}</span>
-                </div>
-			`;
-        box.innerHTML += navItem;
-    });
-}
-function resetName(name){
-    if(name.toLowerCase().endsWith('.exe')){
-        return name.substring(0, name.length - 4);
-    }
-    return name;
-}

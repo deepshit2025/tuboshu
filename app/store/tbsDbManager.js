@@ -40,14 +40,6 @@ const SCHEMA_SQL = `
     sites  TEXT NOT NULL DEFAULT '',
     isOpen INTEGER NOT NULL DEFAULT 0
   );
-  CREATE TABLE IF NOT EXISTS lnks (
-    name     TEXT PRIMARY KEY,
-    type     TEXT NOT NULL DEFAULT '',
-    icon     TEXT NOT NULL DEFAULT '',
-    exePath  TEXT NOT NULL DEFAULT '',
-    args     TEXT NOT NULL DEFAULT '',
-    "order"  INTEGER NOT NULL DEFAULT 0
-  );
   CREATE TABLE IF NOT EXISTS setting (
     name  TEXT PRIMARY KEY,
     value TEXT NOT NULL DEFAULT ''
@@ -315,34 +307,6 @@ class TbsDbManager {
     persistSync()
   }
 
-  // ---------- lnks ----------
-
-  addLnk(lnk) {
-    const db = getDb()
-    const cnt = queryOne(db, 'SELECT COUNT(*) AS c FROM lnks')
-    exec(db,
-      `INSERT INTO lnks (name, type, icon, exePath, args, "order")
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [lnk.name, lnk.type || '', lnk.icon || '', lnk.exePath || '',
-       lnk.args || '', (cnt?.c || 0) + 1]
-    )
-    persistSync()
-  }
-
-  removeLnk(lnk) {
-    getDb().run('DELETE FROM lnks WHERE name = ?', [lnk.name])
-    persistSync()
-  }
-
-  getLnks() {
-    return queryAll(getDb(), 'SELECT * FROM lnks ORDER BY "order" ASC')
-  }
-
-  getLnkCount() {
-    const row = queryOne(getDb(), 'SELECT COUNT(*) AS c FROM lnks')
-    return row?.c || 0
-  }
-
   // ---------- setting（使用 JSON.stringify/parse 保持类型）----------
 
   addSetting(key, val) {
@@ -381,7 +345,6 @@ class TbsDbManager {
         sites: { data: queryAll(db, 'SELECT * FROM sites ORDER BY "order" ASC'), version: 0, update_at: now },
         shortcuts: { data: queryAll(db, 'SELECT * FROM shortcuts'), version: 0, update_at: now },
         groups: { data: queryAll(db, 'SELECT * FROM groups_t'), version: 0, update_at: now },
-        lnks: { data: queryAll(db, 'SELECT * FROM lnks ORDER BY "order" ASC'), version: 0, update_at: now },
         setting: { data: this._getSettingObjs(db), version: 0, update_at: now }
       }
     }
@@ -405,7 +368,6 @@ class TbsDbManager {
       db.run('DELETE FROM sites')
       db.run('DELETE FROM shortcuts')
       db.run('DELETE FROM groups_t')
-      db.run('DELETE FROM lnks')
       db.run('DELETE FROM setting')
 
       // 恢复 sites
@@ -437,17 +399,6 @@ class TbsDbManager {
           `INSERT OR IGNORE INTO groups_t (name, tag, sites, isOpen)
            VALUES (?, ?, ?, ?)`,
           [g.name || '', g.tag || '', g.sites || '', g.isOpen ? 1 : 0]
-        )
-      }
-
-      // 恢复 lnks
-      const lnkData = newData.collections.lnks?.data || []
-      for (const l of lnkData) {
-        db.run(
-          `INSERT OR IGNORE INTO lnks (name, type, icon, exePath, args, "order")
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [l.name || '', l.type || '', l.icon || '',
-           l.exePath || '', l.args || '', l.order || 0]
         )
       }
 
