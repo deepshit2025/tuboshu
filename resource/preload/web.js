@@ -43,8 +43,6 @@ const uadBitness = userAgentData.bitness || '64';
 function buildMainWorldScript() {
   // JSON.stringify 处理所有值，避免转义问题
   const data = {
-    ua,
-    appVer,
     platform,
     vendor,
     language,
@@ -74,8 +72,6 @@ function buildMainWorldScript() {
   // ═══════════════════════════════════════════
   (function() {
     var props = {
-      userAgent:           { get: function() { return D.ua; }, configurable: true },
-      appVersion:          { get: function() { return D.appVer; }, configurable: true },
       platform:            { get: function() { return D.platform; }, configurable: true },
       vendor:              { get: function() { return D.vendor; }, configurable: true },
       webdriver:           { get: function() { return false; }, configurable: true },

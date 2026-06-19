@@ -86,6 +86,7 @@ class Utility {
         session.webRequest.onBeforeSendHeaders((details, callback) => {
             // 批量应用伪装 header，与 browserEnv 中的身份完全一致
             Object.assign(details.requestHeaders, {
+                'user-agent': headers['user-agent'],
                 'sec-ch-ua': headers['sec-ch-ua'],
                 'sec-ch-ua-mobile': headers['sec-ch-ua-mobile'],
                 'sec-ch-ua-platform': headers['sec-ch-ua-platform'],
