@@ -9,7 +9,13 @@ import Utility from "./utility/utility.js";
 class ViewManager {
     constructor() {
         this.views = [];
+        this.parentView = null;
     }
+
+    setParentView(view) {
+        this.parentView = view;
+    }
+
     addView(item) {
         return this.views.push(item);
     }
@@ -31,9 +37,12 @@ class ViewManager {
     }
 
     clearView(view){
-        if (view.object.webContents?.isDestroyed !== true){
-            view.object.webContents.removeAllListeners();
-            view.object.webContents.close()
+        if (view.object) {
+            this.parentView?.removeChildView(view.object);
+            if (view.object.webContents?.isDestroyed !== true){
+                view.object.webContents.removeAllListeners();
+                view.object.webContents.close()
+            }
         }
         view.object = null;
     }

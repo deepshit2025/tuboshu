@@ -73,6 +73,7 @@ class WindowManager{
         this.window = win;
         this.menuView = menuView;
         this.webView = webView;
+        viewManager.setParentView(this.webView);
 
         this.bindIpcMain();
         this.bindEvents();
