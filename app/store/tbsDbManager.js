@@ -346,7 +346,7 @@ class TbsDbManager {
   // ---------- setting（使用 JSON.stringify/parse 保持类型）----------
 
   addSetting(key, val) {
-    getDb().run('INSERT OR IGNORE INTO setting (name, value) VALUES (?, ?)',
+    getDb().run('INSERT OR REPLACE INTO setting (name, value) VALUES (?, ?)',
       [key, JSON.stringify(val)])
     persistSync()
   }
