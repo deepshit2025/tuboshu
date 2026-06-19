@@ -15,6 +15,7 @@ const isOpenContextMenu = ref(true)
 const systemTheme = ref("system")
 const leftMenuPosition = ref('left')
 const howLinkOpenMethod = ref('tuboshu')
+const clipboardWatchEnabled = ref(false)
 const defaultWindowSize = ref({width: 1024, height: 800})
 const isFullScreen = ref(false)
 
@@ -59,6 +60,7 @@ onMounted(async () => {
   isAutoLaunch.value = getValue('isAutoLaunch', settings);
   defaultWindowSize.value = getValue('defaultWindowSize', settings);
   howLinkOpenMethod.value = getValue('howLinkOpenMethod', settings);
+  clipboardWatchEnabled.value = getValue('clipboardWatchEnabled', settings);
 })
 
 
@@ -113,6 +115,12 @@ const changeMenuPos = (e) => {
 const changeLinkOpenMethod = (e) => {
   window.myApi.updateSetting({ name : 'howLinkOpenMethod', value:e.target.value});
   message.success(`设置已更新,请重新启动`)
+}
+
+const changeClipboardWatch = async (val) => {
+  await window.myApi.toggleClipboardWatch(val)
+  clipboardWatchEnabled.value = val
+  message.success(val ? '剪贴板监控已开启' : '剪贴板监控已关闭')
 }
 
 const handleWinChange = (e) => {
@@ -314,6 +322,19 @@ const handleClose = () =>{
                   :label="item.label"
               />
             </n-radio-group>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="vleft">剪贴板记录：</div>
+          <div class="vright">
+            <n-switch size="medium"
+                      v-model:value="clipboardWatchEnabled"
+                      @update:value="changeClipboardWatch" style="font-size:12px;" >
+              <template #checked>开启</template>
+              <template #unchecked>关闭</template>
+            </n-switch>
+            <span style="margin-left: 8px; font-size: 12px; color: #888;">隐藏后仍在后台记录，可在剪贴板页面查看</span>
           </div>
         </div>
 

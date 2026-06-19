@@ -35,6 +35,11 @@ const router = createRouter({
       name: 'group',
       component: () => import('@/views/GroupView.vue')
     },
+    {
+      path: '/clipboard',
+      name: 'clipboard',
+      component: () => import('@/views/ClipboardView.vue')
+    },
   ]
 })
 

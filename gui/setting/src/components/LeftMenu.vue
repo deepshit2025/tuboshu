@@ -27,6 +27,10 @@ const menuOptions = [
   {
     label: () => h(RouterLink, {to: {name: 'feedback'}}, { default: () => '使用反馈' }),
     key: 'feedback',
+  },
+  {
+    label: () => h(RouterLink, {to: {name: 'clipboard'}}, { default: () => '剪贴板' }),
+    key: 'clipboard',
   }
 
 ]

@@ -44,7 +44,13 @@ const SCHEMA_SQL = `
     name  TEXT PRIMARY KEY,
     value TEXT NOT NULL DEFAULT ''
   );
-`
+  CREATE TABLE IF NOT EXISTS clipboard_history (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    content   TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    source    TEXT NOT NULL DEFAULT ''
+  );
+  CREATE INDEX IF NOT EXISTS idx_clipboard_ts ON clipboard_history(timestamp DESC);`
 
 function queryAll(db, sql, params = []) {
   const stmt = db.prepare(sql)
@@ -305,6 +311,54 @@ class TbsDbManager {
   removeGroup(group) {
     getDb().run('DELETE FROM groups_t WHERE name = ?', [group.name])
     persistSync()
+  }
+
+  // ---------- clipboard history ----------
+
+  addClipboardRecord(content, source = '') {
+    const db = getDb()
+    exec(db,
+      `INSERT INTO clipboard_history (content, timestamp, source)
+       VALUES (?, ?, ?)`,
+      [content, Date.now(), source]
+    )
+    // 超过上限时删除最旧的
+    const row = queryOne(db, 'SELECT value FROM setting WHERE name = ?', ['clipboardMaxHistory'])
+    const max = row ? (JSON.parse(row.value) || 500) : 500
+    const count = queryOne(db, 'SELECT COUNT(*) AS c FROM clipboard_history')
+    if ((count?.c || 0) > max) {
+      const excess = (count.c || 0) - max
+      db.run(`DELETE FROM clipboard_history WHERE id IN (
+        SELECT id FROM clipboard_history ORDER BY timestamp ASC LIMIT ?
+      )`, [excess])
+    }
+    persistSync()
+  }
+
+  getClipboardHistory(keyword = '', limit = 200) {
+    const db = getDb()
+    if (keyword) {
+      return queryAll(db,
+        'SELECT * FROM clipboard_history WHERE content LIKE ? ORDER BY timestamp DESC LIMIT ?',
+        [`%${keyword}%`, limit]
+      )
+    }
+    return queryAll(db,
+      'SELECT * FROM clipboard_history ORDER BY timestamp DESC LIMIT ?',
+      [limit]
+    )
+  }
+
+  clearClipboardHistory() {
+    getDb().run('DELETE FROM clipboard_history')
+    persistSync()
+  }
+
+  getLastClipboardContent() {
+    const row = queryOne(getDb(),
+      'SELECT content FROM clipboard_history ORDER BY timestamp DESC LIMIT 1'
+    )
+    return row?.content || ''
   }
 
   // ---------- setting（使用 JSON.stringify/parse 保持类型）----------

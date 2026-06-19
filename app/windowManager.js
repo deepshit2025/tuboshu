@@ -10,6 +10,7 @@ import dataSync from './utility/dataSync.js'
 import Layout from "./utility/layout.js"
 import Utility from "./utility/utility.js";
 import AutoLaunch from "./utility/autoLaunch.js"
+import clipboardWatcher from "./clipboardWatcher.js"
 
 
 class WindowManager{
@@ -81,12 +82,18 @@ class WindowManager{
             win.maximize();
         }
         win.show();
+
+        // 如果剪贴板监控已启用，启动轮询
+        if (storeManager.getSetting('clipboardWatchEnabled')) {
+            clipboardWatcher.start();
+        }
     }
 
     bindIpcMain(){
 
         dataExport.bindIpcMain();
         dataSync.bindIpcMain();
+        clipboardWatcher.bindIpcMain();
 
         ipcMain.handle('handle:menu', async (event, hide) => {
             if(hide === true){
@@ -371,6 +378,7 @@ class WindowManager{
     destroy() {
        if(this.cleanupTimer) clearTimeout(this.cleanupTimer);
        if(this.resizeTimer) clearTimeout(this.resizeTimer);
+       clipboardWatcher.stop();
        if(this.window) this.window = null;
     }
 }

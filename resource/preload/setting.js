@@ -24,6 +24,11 @@ contextBridge.exposeInMainWorld('myApi', {
     clearCache: () => ipcRenderer.invoke('dataSync:clear:cache'),
     getAppConfig: () => ipcRenderer.invoke('dataSync:get:data'),
     restoreAppConfig: (data) => ipcRenderer.send('dataSync:get:data', data),
+
+    // 剪贴板历史
+    getClipboardHistory: (keyword) => ipcRenderer.invoke('clipboard:history', keyword),
+    clearClipboardHistory: () => ipcRenderer.invoke('clipboard:clear'),
+    toggleClipboardWatch: (enabled) => ipcRenderer.invoke('clipboard:toggle', enabled),
 });
 
 window.addEventListener('contextmenu', (e) => {
