@@ -14,7 +14,7 @@ const jsElement = ref({});
 
 const initData = async () => {
   const config = await window.myApi.getConfig();
-  list.value = [...config.openMenus.reverse(), ...config.closeMenus];
+  list.value = [...config.openMenus, ...config.closeMenus];
 };
 
 onMounted(async () => {
