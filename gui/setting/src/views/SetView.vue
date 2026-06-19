@@ -202,6 +202,18 @@ const handleClose = () =>{
         </div>
 
         <div class="card">
+          <div class="vleft">全屏启动：</div>
+          <div class="vright">
+            <n-switch size="medium"
+                      v-model:value="isFullScreen"
+                      @update:value="changeFullScreen" style="font-size:12px;" >
+              <template #checked>开启</template>
+              <template #unchecked>关闭</template>
+            </n-switch>
+          </div>
+        </div>
+
+        <div class="card">
           <div class="vleft">开机启动：</div>
           <div class="vright">
             <n-switch size="medium"
@@ -218,18 +230,6 @@ const handleClose = () =>{
             <n-switch size="medium"
                       v-model:value="isOpenDevTools"
                       @update:value="changeDevTools" style="font-size:12px;" >
-              <template #checked>开启</template>
-              <template #unchecked>关闭</template>
-            </n-switch>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="vleft">全屏启动：</div>
-          <div class="vright">
-            <n-switch size="medium"
-                      v-model:value="isFullScreen"
-                      @update:value="changeFullScreen" style="font-size:12px;" >
               <template #checked>开启</template>
               <template #unchecked>关闭</template>
             </n-switch>
