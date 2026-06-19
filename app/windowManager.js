@@ -16,8 +16,8 @@ import AutoLaunch from "./utility/autoLaunch.js"
 class WindowManager{
 
     isAdjusting = false;
+    resizeTimer = null;
     cleanupTimer = null;
-    resizeRaf = null;
     constructor() {
         this.window = null
         this.menuView = null
@@ -287,11 +287,10 @@ class WindowManager{
 
     bindEvents(){
         this.window.on('resize', () => {
-            if (this.resizeRaf) return;
-            this.resizeRaf = requestAnimationFrame(() => {
+            if (this.resizeTimer) clearTimeout(this.resizeTimer);
+            this.resizeTimer = setTimeout(() => {
                 this.handleResize();
-                this.resizeRaf = null;
-            });
+            }, 200);
         })
 
         this.window.on('move', () => {
@@ -418,7 +417,7 @@ class WindowManager{
 
     destroy() {
        if(this.cleanupTimer) clearTimeout(this.cleanupTimer);
-       if(this.resizeRaf) cancelAnimationFrame(this.resizeRaf);
+       if(this.resizeTimer) clearTimeout(this.resizeTimer);
        if(this.window) this.window = null;
     }
 }
