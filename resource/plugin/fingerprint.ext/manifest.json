@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Browser Fingerprint Randomizer",
+  "version": "2.0",
+  "description": "浏览器指纹随机化器 v2.0",
+  "permissions": [
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ]
+}
