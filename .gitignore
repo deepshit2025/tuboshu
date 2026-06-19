@@ -5,3 +5,4 @@ gui/setting/node_modules/
 loki.db*
 out/
 .codegraph/
+reasonix.toml
