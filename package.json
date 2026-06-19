@@ -27,6 +27,7 @@
     "appId": "com.tuboshu.tuboshu",
     "productName": "Tuboshu",
     "npmRebuild": false,
+    "afterPack": "./scripts/afterPack.js",
     "files": [
       "**/*",
       "!app/**/*",
