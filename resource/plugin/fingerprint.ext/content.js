@@ -3,8 +3,8 @@ const CONFIG = {
   obfuscationLevel: 'medium', // 'light' | 'medium' | 'heavy'
 
   detectionPoints: {
-    userAgent: false,           // UserAgent 字符串
-    navigator: true,          // Navigator 属性
+    userAgent: false,           // 由 disguise 模块负责
+    navigator: false,          // 由 disguise 模块负责
     screen: true,             // 屏幕信息
     timezone: true,           // 时区信息
     canvas: true,             // Canvas 指纹
@@ -93,21 +93,21 @@ const Utils = {
     const configs = {
       light: {
         name: '轻度混淆',
-        enabledPoints: ['userAgent', 'navigator', 'screen', 'timezone'],
+        enabledPoints: ['screen', 'timezone'],
         webrtcProtection: false,
         canvasNoiseIntensity: 0.05,
         description: '基础指纹混淆，影响最小'
       },
       medium: {
         name: '中度混淆', 
-        enabledPoints: ['userAgent', 'navigator', 'screen', 'timezone', 'canvas', 'webgl', 'fonts'],
+        enabledPoints: ['screen', 'timezone', 'canvas', 'webgl', 'fonts'],
         webrtcProtection: false,
         canvasNoiseIntensity: 0.1,
         description: '平衡的指纹混淆，适合日常使用'
       },
       heavy: {
         name: '重度混淆',
-        enabledPoints: ['userAgent', 'navigator', 'screen', 'timezone', 'canvas', 'webgl', 'fonts', 'geolocation', 'webrtc', 'audio'],
+        enabledPoints: ['screen', 'timezone', 'canvas', 'webgl', 'fonts', 'geolocation', 'webrtc', 'audio'],
         webrtcProtection: true,
         canvasNoiseIntensity: 0.15,
         description: '最强指纹混淆，包含WebRTC IP泄露防护'
