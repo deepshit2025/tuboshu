@@ -1,7 +1,7 @@
 import {WebContentsView, session, shell} from 'electron'
 import eventManager from './eventManager.js'
 import tbsDbManager from './store/tbsDbManager.js'
-import fingerPrint from "./disguise/fingerPrint.js";
+import browserEnv from "./disguise/browserEnv.js";
 import storeManager from "./store/storeManager.js";
 import CONS from './constants.js'
 import Utility from "./utility/utility.js";
@@ -84,7 +84,7 @@ class ViewManager {
     }
 
     createView(url, name, source) {
-        const {fingerprint, headers} = fingerPrint.getFinger();
+        const {identity, headers} = browserEnv.getAll();
         const partitionName = 'persist:' + name;
         const mySession = session.fromPartition(partitionName);
 
@@ -92,7 +92,7 @@ class ViewManager {
         const preloadjs = Utility.selectAppropriatePreload(url);
 
         const unique = Date.now();
-        const args = {source, name, unique, fingerprint};
+        const args = {source, name, unique, fingerprint: identity};
 
         const view = new WebContentsView({
             webPreferences: {

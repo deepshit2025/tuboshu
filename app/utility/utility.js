@@ -79,18 +79,29 @@ class Utility {
     }
     static alterRequestHeader(view, headers){
         const session = view.webContents.session;
+        // 每个 session 只注册一次，避免重复监听器堆积
+        if (session.__headerPatched) return;
+        session.__headerPatched = true;
+
         session.webRequest.onBeforeSendHeaders((details, callback) => {
-            const domains = ['google'];
-            if(domains.some(domain => details.url.toLowerCase().includes(domain))){
-                callback({ requestHeaders: details.requestHeaders});
+            // 对有跨域安全检查要求的特殊域名跳过改写（减少干扰）
+            const skipDomains = ['accounts.google.com', 'login.google.com'];
+            if (skipDomains.some(d => details.url.toLowerCase().includes(d))) {
+                callback({ requestHeaders: details.requestHeaders });
                 return;
             }
-            details.requestHeaders['user-agent'] = headers['user-agent'];
-            details.requestHeaders['sec-ch-ua'] = headers['sec-ch-ua'];
-            // details.requestHeaders['upgrade-insecure-requests'] = headers['upgrade-insecure-requests'];
-            // details.requestHeaders[' accept'] = headers[' accept'];
+
+            // 批量应用伪装 header，与 browserEnv 中的身份完全一致
+            Object.assign(details.requestHeaders, {
+                'user-agent': headers['user-agent'],
+                'sec-ch-ua': headers['sec-ch-ua'],
+                'sec-ch-ua-mobile': headers['sec-ch-ua-mobile'],
+                'sec-ch-ua-platform': headers['sec-ch-ua-platform'],
+                'sec-ch-ua-platform-version': headers['sec-ch-ua-platform-version'],
+                'accept-language': headers['accept-language'],
+            });
+
             callback({ requestHeaders: details.requestHeaders });
-            //callback({ requestHeaders: Object.assign(details.requestHeaders, headers)});
         });
     }
 

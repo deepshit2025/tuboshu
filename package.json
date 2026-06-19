@@ -21,7 +21,6 @@
     "electron-vite": "^3.1.0"
   },
   "dependencies": {
-    "fingerprint-generator": "^2.1.63",
     "sql.js": "^1.14.1"
   },
   "build": {
