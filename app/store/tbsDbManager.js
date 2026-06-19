@@ -354,6 +354,11 @@ class TbsDbManager {
     persistSync()
   }
 
+  removeClipboardRecord(id) {
+    getDb().run('DELETE FROM clipboard_history WHERE id = ?', [id])
+    persistSync()
+  }
+
   getLastClipboardContent() {
     const row = queryOne(getDb(),
       'SELECT content FROM clipboard_history ORDER BY timestamp DESC LIMIT 1'

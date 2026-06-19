@@ -50,6 +50,12 @@ class ClipboardWatcher {
       return tbsDbManager.getClipboardHistory(keyword)
     })
 
+    // 删除单条记录
+    ipcMain.handle('clipboard:delete', async (event, id) => {
+      tbsDbManager.removeClipboardRecord(id)
+      return true
+    })
+
     // 清空剪贴板历史
     ipcMain.handle('clipboard:clear', async () => {
       tbsDbManager.clearClipboardHistory()

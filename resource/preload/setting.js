@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('myApi', {
     // 剪贴板历史
     getClipboardHistory: (keyword) => ipcRenderer.invoke('clipboard:history', keyword),
     clearClipboardHistory: () => ipcRenderer.invoke('clipboard:clear'),
+    deleteClipboardRecord: (id) => ipcRenderer.invoke('clipboard:delete', id),
     toggleClipboardWatch: (enabled) => ipcRenderer.invoke('clipboard:toggle', enabled),
 });
 
