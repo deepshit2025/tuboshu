@@ -83,14 +83,10 @@ class ClipboardWatcher {
         } else if (text !== this._lastText) {
           text = text.trim()
           this._lastText = text
-          // 内容与数据库最新记录相同 → 已在顶端，不做任何处理
-          const latestContent = tbsDbManager.getLastClipboardContent()
-          if (text === latestContent) return
 
+          // 已存在则跳过，不更新时间戳
           const existing = tbsDbManager.findClipboardByContent(text)
-          if (existing) {
-            tbsDbManager.updateClipboardTimestamp(existing.id)
-          } else {
+          if (!existing) {
             tbsDbManager.addClipboardRecord(text)
           }
         }
