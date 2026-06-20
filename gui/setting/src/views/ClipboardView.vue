@@ -216,114 +216,114 @@ onUnmounted(() => {
 
 <template>
   <div id="content-main">
-    <!-- 标题 -->
-    <n-h3 style="margin-bottom: 0.75rem;">剪贴板历史</n-h3>
+    <n-alert :show-icon="false" type="info" style="margin-bottom: 1rem;">
+      <n-h3 style="margin-bottom: 0;">剪贴板历史</n-h3>
+    </n-alert>
 
-    <!-- 工具栏 -->
-    <div class="toolbar">
-      <n-switch size="small" :value="isWatchEnabled" @update:value="handleToggleWatch">
-        <template #checked>
-          <span style="font-size:12px;">开</span>
-        </template>
-        <template #unchecked>
-          <span style="font-size:12px;">关</span>
-        </template>
-      </n-switch>
-      <span class="toolbar-hint">
-        {{ isWatchEnabled ? '监控中，自动识别文本/图片/文件' : '开启后自动记录剪贴板内容' }}
-      </span>
-
-      <div class="toolbar-right">
-        <n-input
-          v-if="activeTab === 'text'"
-          size="small"
-          v-model:value="keyword"
-          placeholder="搜索剪贴板内容..."
-          clearable
-          style="width: 200px;"
-          @keyup.enter="handleSearch"
-        >
-          <template #prefix>
-            <n-icon size="14"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></n-icon>
+    <div class="box">
+      <!-- 工具栏 -->
+      <div class="box-title">
+        <n-switch size="small" :value="isWatchEnabled" @update:value="handleToggleWatch">
+          <template #checked>
+            <span style="font-size:12px;">开</span>
           </template>
-        </n-input>
+          <template #unchecked>
+            <span style="font-size:12px;">关</span>
+          </template>
+        </n-switch>
+        <span class="toolbar-hint">
+          {{ isWatchEnabled ? '监控中，自动识别文本/图片/文件' : '开启后自动记录剪贴板内容' }}
+        </span>
 
-        <n-dropdown trigger="click" :options="clearOptions" @select="handleClear">
-          <n-button size="tiny" ghost>清空 ▾</n-button>
-        </n-dropdown>
-      </div>
-    </div>
+        <div class="toolbar-right">
+          <n-input
+            v-if="activeTab === 'text'"
+            size="small"
+            v-model:value="keyword"
+            placeholder="搜索剪贴板内容..."
+            clearable
+            style="width: 200px;"
+            @keyup.enter="handleSearch"
+          >
+            <template #prefix>
+              <n-icon size="14"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></n-icon>
+            </template>
+          </n-input>
 
-    <!-- 分类标签 -->
-    <n-tabs type="line" v-model:value="activeTab" style="margin-bottom: 12px;">
-      <n-tab name="text">文本 ({{ textList.length }})</n-tab>
-      <n-tab name="image">图片 ({{ imageList.length }})</n-tab>
-      <n-tab name="file">文件 ({{ fileList.length }})</n-tab>
-    </n-tabs>
-
-    <!-- ========== 文本区域（瀑布流） ========== -->
-    <div v-show="activeTab === 'text'">
-      <div>
-        <n-empty v-if="textList.length === 0" description="暂无文本记录" style="padding: 60px 0;" />
-        <div v-else class="masonry">
-          <div v-for="item in textList" :key="'t' + item.id" class="masonry-card">
-            <div class="card-top">
-              <span class="card-time">{{ relativeTime(item.timestamp) }}</span>
-            </div>
-            <div class="card-body" :title="item.content">{{ item.content }}</div>
-            <div class="card-actions">
-              <n-button size="tiny" @click="handleCopy(item.content)">复制</n-button>
-              <n-button v-if="isUrl(item.content)" size="tiny" secondary @click="handleOpenUrl(item.content)">打开链接</n-button>
-              <n-button size="tiny" quaternary @click="handleDeleteText(item.id)" class="btn-delete">删除</n-button>
-            </div>
-          </div>
+          <n-dropdown trigger="click" :options="clearOptions" @select="handleClear">
+            <n-button size="tiny" ghost>清空 ▾</n-button>
+          </n-dropdown>
         </div>
       </div>
-    </div>
 
-    <!-- ========== 图片区域 ========== -->
-    <div v-show="activeTab === 'image'">
-      <div>
-        <n-empty v-if="imageList.length === 0" description="暂无图片记录" style="padding: 60px 0;" />
-        <div v-else class="image-grid">
-          <div v-for="item in imageList" :key="'i' + item.id" class="image-card">
-            <div class="image-wrap">
-              <n-image
-                :src="item.dataUrl"
-                object-fit="cover"
-                style="width:100%; height: 160px;"
-                preview-disabled
-              />
-              <div class="image-overlay">
-                <n-button size="tiny" @click.stop="handleCopyImage(item)">复制图片</n-button>
+      <!-- 分类标签 -->
+      <n-tabs type="line" v-model:value="activeTab" class="tabs-bar">
+        <n-tab name="text">文本 ({{ textList.length }})</n-tab>
+        <n-tab name="image">图片 ({{ imageList.length }})</n-tab>
+        <n-tab name="file">文件 ({{ fileList.length }})</n-tab>
+      </n-tabs>
+
+      <!-- ========== 可滚动内容区域 ========== -->
+      <div class="box-card" v-auto-height="{ offset: 20 }">
+        <!-- ========== 文本区域（瀑布流） ========== -->
+        <div v-show="activeTab === 'text'">
+          <n-empty v-if="textList.length === 0" description="暂无文本记录" style="padding: 60px 0;" />
+          <div v-else class="masonry">
+            <div v-for="item in textList" :key="'t' + item.id" class="masonry-card">
+              <div class="card-top">
+                <span class="card-time">{{ relativeTime(item.timestamp) }}</span>
+              </div>
+              <div class="card-body" :title="item.content">{{ item.content }}</div>
+              <div class="card-actions">
+                <n-button size="tiny" @click="handleCopy(item.content)">复制</n-button>
+                <n-button v-if="isUrl(item.content)" size="tiny" secondary @click="handleOpenUrl(item.content)">打开链接</n-button>
+                <n-button size="tiny" quaternary @click="handleDeleteText(item.id)" class="btn-delete">删除</n-button>
               </div>
             </div>
-            <div class="image-info">
-              <span class="card-time">{{ relativeTime(item.timestamp) }}</span>
-              <n-button size="tiny" quaternary @click="handleDeleteImage(item.id)" class="btn-delete">删除</n-button>
+          </div>
+        </div>
+
+        <!-- ========== 图片区域 ========== -->
+        <div v-show="activeTab === 'image'">
+          <n-empty v-if="imageList.length === 0" description="暂无图片记录" style="padding: 60px 0;" />
+          <div v-else class="image-grid">
+            <div v-for="item in imageList" :key="'i' + item.id" class="image-card">
+              <div class="image-wrap">
+                <n-image
+                  :src="item.dataUrl"
+                  object-fit="cover"
+                  style="width:100%; height: 160px;"
+                  preview-disabled
+                />
+                <div class="image-overlay">
+                  <n-button size="tiny" @click.stop="handleCopyImage(item)">复制图片</n-button>
+                </div>
+              </div>
+              <div class="image-info">
+                <span class="card-time">{{ relativeTime(item.timestamp) }}</span>
+                <n-button size="tiny" quaternary @click="handleDeleteImage(item.id)" class="btn-delete">删除</n-button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- ========== 文件区域 ========== -->
-    <div v-show="activeTab === 'file'">
-      <div>
-        <n-empty v-if="fileList.length === 0" description="暂无文件记录" style="padding: 60px 0;" />
-        <div v-else class="clip-list">
-          <div v-for="item in fileList" :key="'f' + item.id" class="clip-card">
-            <div class="card-top">
-              <span class="file-icon">{{ getFileIcon(item.origin_name) }}</span>
-              <span class="card-time">{{ relativeTime(item.timestamp) }}</span>
-            </div>
-            <div class="file-meta">
-              <span class="file-name" :title="item.origin_name">{{ item.origin_name }}</span>
-              <span v-if="item.size" class="file-size">{{ formatBytes(item.size) }}</span>
-            </div>
-            <div class="card-actions">
-              <n-button size="tiny" @click="handleOpenFile(item.file_path)">打开文件</n-button>
-              <n-button size="tiny" quaternary @click="handleDeleteFile(item.id)" class="btn-delete">删除</n-button>
+        <!-- ========== 文件区域 ========== -->
+        <div v-show="activeTab === 'file'">
+          <n-empty v-if="fileList.length === 0" description="暂无文件记录" style="padding: 60px 0;" />
+          <div v-else class="clip-list">
+            <div v-for="item in fileList" :key="'f' + item.id" class="clip-card">
+              <div class="card-top">
+                <span class="file-icon">{{ getFileIcon(item.origin_name) }}</span>
+                <span class="card-time">{{ relativeTime(item.timestamp) }}</span>
+              </div>
+              <div class="file-meta">
+                <span class="file-name" :title="item.origin_name">{{ item.origin_name }}</span>
+                <span v-if="item.size" class="file-size">{{ formatBytes(item.size) }}</span>
+              </div>
+              <div class="card-actions">
+                <n-button size="tiny" @click="handleOpenFile(item.file_path)">打开文件</n-button>
+                <n-button size="tiny" quaternary @click="handleDeleteFile(item.id)" class="btn-delete">删除</n-button>
+              </div>
             </div>
           </div>
         </div>
@@ -333,16 +333,25 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* ---------- 工具栏 ---------- */
-.toolbar {
+/* ---------- box 容器（与其他页面协同） ---------- */
+.box {
+  flex: 1;
+  border: 1px solid var(--new-color-border);
+  min-width: 600px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- 工具栏（固定头部，类似 .box-title） ---------- */
+.box-title {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  margin-bottom: 12px;
-  background: var(--color-background-soft);
-  border: 1px solid var(--new-color-border);
-  border-radius: 8px;
+  border-bottom: 1px solid var(--new-color-border);
+  background-color: var(--color-background-mute);
+  flex-shrink: 0;
 }
 .toolbar-hint {
   font-size: 12px;
@@ -354,6 +363,21 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* ---------- 分类标签（固定头部） ---------- */
+.tabs-bar {
+  flex-shrink: 0;
+  padding: 0 14px;
+  background: var(--color-background);
+  border-bottom: 1px solid var(--new-color-border);
+}
+
+/* ---------- 可滚动内容区域 ---------- */
+.box-card {
+  overflow: hidden;
+  overflow-y: auto;
+  padding: 14px;
 }
 
 /* ---------- 瀑布流（文本） ---------- */
