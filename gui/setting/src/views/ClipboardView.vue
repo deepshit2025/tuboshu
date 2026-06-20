@@ -45,6 +45,26 @@ function isUrl(text) {
   }
 }
 
+// 搜索高亮：用绿色加粗 <span> 包裹关键词
+function highlightText(text) {
+  if (!keyword.value) return escapeHtml(text)
+  const kw = keyword.value.trim()
+  if (!kw) return escapeHtml(text)
+  const escaped = escapeHtml(text)
+  const escapedKw = escapeHtml(kw)
+  const regex = new RegExp(`(${escapedKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+  return escaped.replace(regex, '<span class="highlight">$1</span>')
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
 // ---------- 数据加载 ----------
 const loadText = async () => {
   try {
@@ -171,7 +191,7 @@ onUnmounted(() => {
                 <n-button size="tiny" quaternary @click="handleDeleteText(item.id)" class="btn-delete">删除</n-button>
               </div>
             </div>
-            <div class="card-body">{{ item.content }}</div>
+            <div class="card-body" v-html="highlightText(item.content)"></div>
           </div>
         </div>
       </div>
@@ -270,6 +290,10 @@ onUnmounted(() => {
   word-break: break-all;
   margin-bottom: 4px;
   cursor: pointer;
+}
+.card-body :deep(.highlight) {
+  color: #22c55e;
+  font-weight: 700;
 }
 
 .card-actions {
