@@ -237,7 +237,7 @@ onUnmounted(() => {
 
         <div class="toolbar-right">
           <n-input
-            v-if="activeTab === 'text'"
+            v-show="activeTab === 'text'"
             size="small"
             v-model:value="keyword"
             placeholder="搜索剪贴板内容..."
