@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, toRaw } from 'vue';
+import draggable from "vuedraggable"
 import NewDrawer from "@/components/NewDrawer.vue";
 import JsEditorDrawer from "@/components/JsEditorDrawer.vue";
 import iconAddNew from "@/components/icons/addNew.vue";
@@ -108,6 +109,19 @@ const handleImportConfig = async () => {
 
 };
 
+// 拖拽排序：更新所有站点 order 并持久化，同步到侧边导航栏
+const handleDragChange = async () => {
+  try {
+    const plainList = JSON.parse(JSON.stringify(list.value));
+    plainList.forEach((item, index) => {
+      item.order = index + 1;
+    });
+    await window.myApi.batchMenus(plainList);
+  } catch (error) {
+    message.error("排序失败:" + error);
+  }
+};
+
 </script>
 
 <template>
@@ -118,7 +132,8 @@ const handleImportConfig = async () => {
 
     <n-alert :show-icon="false">
       1.点击“新增站点”，可自行添加站点，也可修改或者删除站点；<br>
-      2.相同网站的站点多次添加，即可实现多开效果。<br>
+      2.相同网站的站点多次添加，即可实现多开效果；<br>
+      3.拖动站点左侧手柄调整排序，结果实时同步到侧边导航栏。
     </n-alert>
 
     <div class="box">
@@ -138,9 +153,16 @@ const handleImportConfig = async () => {
       </div>
       <div class="box-card" v-auto-height="{ offset: 20}">
         <div class="wrap">
-          <template v-for="element in list">
-            <LinkItem :element="element" @edit="handleEdit" @remove="handleRemove" @clone="handleClone" @jsEditor="handleJsEditor" />
-          </template>
+          <draggable
+            :list="list"
+            itemKey="name"
+            handle=".drag-handle"
+            @change="handleDragChange"
+          >
+            <template #item="{ element }">
+              <LinkItem :element="element" @edit="handleEdit" @remove="handleRemove" @clone="handleClone" @jsEditor="handleJsEditor" />
+            </template>
+          </draggable>
         </div>
       </div>
     </div>

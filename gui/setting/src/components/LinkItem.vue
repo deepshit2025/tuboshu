@@ -2,6 +2,7 @@
 import iconOptions from "./icons/options.vue"
 import iconJseditor from "./icons/jseditor.vue"
 import iconRefresh from "./icons/refresh.vue"
+import iconDragHandle from "./icons/dragHandle.vue"
 
 const message = useMessage();
 const props = defineProps({
@@ -90,6 +91,9 @@ const stopAnimation = ()=>{
 
 <template>
   <div class="wrap">
+    <div class="drag-handle">
+      <n-icon size="22"><iconDragHandle /></n-icon>
+    </div>
     <n-avatar @click="handleClickOpenSite" round width="40" :src="icon"/>
     <div class="link">
       <div> {{ element.tag }}</div>
@@ -145,6 +149,24 @@ const stopAnimation = ()=>{
   place-items: center;
   border-bottom: 1px solid var(--new-color-border);
   gap: 10px;
+}
+.drag-handle {
+  cursor: grab;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 40px;
+  flex-shrink: 0;
+  color: var(--color-text);
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+.wrap:hover .drag-handle {
+  opacity: 0.8;
 }
 .link{
   cursor: pointer;
