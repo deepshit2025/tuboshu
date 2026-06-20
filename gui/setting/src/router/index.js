@@ -10,11 +10,6 @@ const router = createRouter({
       component: () => import('@/views/ListView.vue')
     },
     {
-      path: '/display',
-      name: 'display',
-      component: () => import('@/views/DisplayView.vue')
-    },
-    {
       path: '/shortcut',
       name: 'shortcut',
       component: () => import('@/views/ShortcutView.vue')

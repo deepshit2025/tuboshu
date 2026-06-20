@@ -13,10 +13,6 @@ const menuOptions = [
     key: 'group',
   },
   {
-    label: () => h(RouterLink, {to: {name: 'display'}}, { default: () => '站点排序' }),
-    key: 'display',
-  },
-  {
     label: () => h(RouterLink, {to: {name: 'shortcut'}}, { default: () => '改快捷键' }),
     key: 'shortcut',
   },
