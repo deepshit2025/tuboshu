@@ -55,6 +55,12 @@ contextBridge.exposeInMainWorld('myApi', {
     openClipboardFile: (filePath) => ipcRenderer.invoke('clipboard:file:open', filePath),
     // 新增：在默认浏览器中打开链接
     openLinkInBrowser: (url) => ipcRenderer.invoke('clipboard:url:open', url),
+
+    // 插件市场
+    getPlugins: () => ipcRenderer.invoke('get:plugins'),
+    togglePlugin: (id, enabled) => ipcRenderer.invoke('toggle:plugin', { id, enabled }),
+    installLocalPlugin: () => ipcRenderer.invoke('install:local-plugin'),
+    uninstallPlugin: (id) => ipcRenderer.invoke('uninstall:plugin', id),
 });
 
 window.addEventListener('contextmenu', (e) => {

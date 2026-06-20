@@ -1,4 +1,4 @@
-import {app, BaseWindow, View, ipcMain, clipboard, WebContentsView, nativeTheme} from 'electron'
+import {app, BaseWindow, View, ipcMain, clipboard, WebContentsView, nativeTheme, dialog} from 'electron'
 import viewManager from './viewManager.js'
 import tbsDbManager from './store/tbsDbManager.js'
 import storeManager from './store/storeManager.js'
@@ -11,6 +11,7 @@ import Layout from "./utility/layout.js"
 import Utility from "./utility/utility.js";
 import AutoLaunch from "./utility/autoLaunch.js"
 import clipboardWatcher from "./clipboardWatcher.js"
+import pluginManager from "./pluginManager.js"
 
 
 class WindowManager{
@@ -275,6 +276,32 @@ class WindowManager{
                 AutoLaunch.initAutoLaunch();
             }
         });
+
+        // ---------- plugin ----------
+
+        ipcMain.handle('get:plugins', async () => {
+            return pluginManager.getPlugins()
+        })
+
+        ipcMain.handle('toggle:plugin', async (event, { id, enabled }) => {
+            pluginManager.togglePlugin(id, enabled)
+            return { success: true }
+        })
+
+        ipcMain.handle('install:local-plugin', async () => {
+            const result = await dialog.showOpenDialog({
+                properties: ['openDirectory'],
+                title: '选择插件目录（.ext 文件夹）'
+            })
+            if (result.canceled || result.filePaths.length === 0) {
+                return { success: false, error: '已取消' }
+            }
+            return pluginManager.installFromLocal(result.filePaths[0])
+        })
+
+        ipcMain.handle('uninstall:plugin', async (event, id) => {
+            return pluginManager.uninstall(id)
+        })
 
         ipcMain.handle('get:favicon', async (event, name) => {
             try {

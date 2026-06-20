@@ -35,6 +35,11 @@ const router = createRouter({
       name: 'clipboard',
       component: () => import('@/views/ClipboardView.vue')
     },
+    {
+      path: '/plugin',
+      name: 'plugin',
+      component: () => import('@/views/PluginMarketView.vue')
+    },
   ]
 })
 

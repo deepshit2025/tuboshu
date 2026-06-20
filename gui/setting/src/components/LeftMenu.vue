@@ -27,6 +27,10 @@ const menuOptions = [
   {
     label: () => h(RouterLink, {to: {name: 'clipboard'}}, { default: () => '剪贴板' }),
     key: 'clipboard',
+  },
+  {
+    label: () => h(RouterLink, {to: {name: 'plugin'}}, { default: () => '插件市场' }),
+    key: 'plugin',
   }
 
 ]

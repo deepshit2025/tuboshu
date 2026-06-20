@@ -1,9 +1,9 @@
 import {app} from 'electron'
 import path from 'path'
-import { readdir } from 'fs/promises';
 import { URL, fileURLToPath } from 'url'
 import requestJson from './request.js'
 import CONS from '../constants.js'
+import pluginManager from '../pluginManager.js'
 
 const versionUrl = "https://upsort.com/tuboshu";
 const getDomain = (url) => {
@@ -36,23 +36,7 @@ class Utility {
 
     static async loadExtensions(view) {
         const sess = view.webContents.session;
-
-        const extensionsDir = app.isPackaged
-            ? path.join(process.resourcesPath, 'plugin')
-            : path.join(CONS.APP.PATH, './resource/plugin');
-        const entries = await readdir(extensionsDir, { withFileTypes: true });
-
-        for (const entry of entries) {
-            if (!entry.isDirectory() || !entry.name.endsWith('.ext')) continue;
-            const extPath = path.join(extensionsDir, entry.name);
-            try {
-                await sess.extensions.loadExtension(extPath);
-                console.log(`Successfully loaded extension: ${extPath}`);
-            } catch (err) {
-                console.error(`Failed to load extension ${extPath}:`, err);
-            }
-        }
-        return true;
+        return pluginManager.loadEnabledExtensions(sess)
     }
 
     static selectAppropriatePreload(url){

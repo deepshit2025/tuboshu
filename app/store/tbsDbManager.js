@@ -1,5 +1,6 @@
 import {app, nativeImage} from 'electron'
 import crypto from 'crypto'
+import fs from 'fs'
 import path from 'path'
 import {initDatabase, getDb, persistSync, closeDatabase} from './database.js'
 import {migrateFromLegacyDb} from './migrate.js'
@@ -57,12 +58,16 @@ const SCHEMA_SQL = `
     timestamp INTEGER NOT NULL,
     source    TEXT NOT NULL DEFAULT ''
   );
-  CREATE TABLE IF NOT EXISTS clipboard_files (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    file_path   TEXT NOT NULL,
-    origin_name TEXT NOT NULL DEFAULT '',
-    timestamp   INTEGER NOT NULL,
-    source      TEXT NOT NULL DEFAULT ''
+  CREATE TABLE IF NOT EXISTS plugin (
+    id          TEXT PRIMARY KEY,
+    name        TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    version     TEXT NOT NULL DEFAULT '',
+    author      TEXT NOT NULL DEFAULT '',
+    type        TEXT NOT NULL DEFAULT 'built-in',
+    enabled     INTEGER NOT NULL DEFAULT 1,
+    installed_at TEXT NOT NULL DEFAULT '',
+    ext_path    TEXT NOT NULL DEFAULT ''
   );`
 
 function queryAll(db, sql, params = []) {
@@ -115,6 +120,9 @@ class TbsDbManager {
     // 3. 填充初始数据（空库时）
     this._seedIfEmpty(db)
 
+    // 4. 初始化内置插件
+    this._seedPluginsIfEmpty(db)
+
     this._initialized = true
   }
 
@@ -139,6 +147,40 @@ class TbsDbManager {
     }
   }
 
+  _seedPluginsIfEmpty(db) {
+    if (queryOne(db, 'SELECT 1 FROM plugin LIMIT 1') !== null) return
+
+    const pluginsDir = path.join(CONS.APP.PATH, 'resource/plugin')
+    let entries
+    try {
+      entries = fs.readdirSync(pluginsDir, { withFileTypes: true })
+    } catch {
+      return
+    }
+
+    const now = String(Date.now())
+    for (const entry of entries) {
+      if (!entry.isDirectory() || !entry.name.endsWith('.ext')) continue
+      const manifestPath = path.join(pluginsDir, entry.name, 'manifest.json')
+      let manifest
+      try {
+        manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'))
+      } catch {
+        continue
+      }
+
+      const id = entry.name.replace(/\.ext$/, '')
+      exec(db,
+        `INSERT OR IGNORE INTO plugin (id, name, description, version, author, type, enabled, installed_at, ext_path)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, manifest.name || id, manifest.description || '',
+         manifest.version || '1.0', manifest.author || '',
+         'built-in', 1, now, path.join(pluginsDir, entry.name)]
+      )
+    }
+    persistSync()
+  }
+
   _migrateClipboardColumns(db) {
     // 检查 pinned 列是否存在
     const cols = queryAll(db, 'PRAGMA table_info(clipboard_history)')
@@ -152,6 +194,54 @@ class TbsDbManager {
     if (!colNames.includes('favorite')) {
       db.run('ALTER TABLE clipboard_history ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0')
     }
+  }
+
+  // ---------- plugin ----------
+
+  getPlugins() {
+    return queryAll(getDb(), 'SELECT * FROM plugin ORDER BY type ASC, name ASC').map(p => ({
+      ...p,
+      enabled: !!p.enabled
+    }))
+  }
+
+  getPlugin(id) {
+    const row = queryOne(getDb(), 'SELECT * FROM plugin WHERE id = ?', [id])
+    if (row) row.enabled = !!row.enabled
+    return row
+  }
+
+  addPlugin(plugin) {
+    const db = getDb()
+    exec(db,
+      `INSERT OR REPLACE INTO plugin (id, name, description, version, author, type, enabled, installed_at, ext_path)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [plugin.id, plugin.name || '', plugin.description || '', plugin.version || '',
+       plugin.author || '', plugin.type || 'local', plugin.enabled ? 1 : 0,
+       plugin.installed_at || String(Date.now()), plugin.ext_path || '']
+    )
+    persistSync()
+  }
+
+  updatePlugin(id, fields) {
+    const db = getDb()
+    const existing = queryOne(db, 'SELECT * FROM plugin WHERE id = ?', [id])
+    if (!existing) return
+    const merged = { ...existing, ...fields }
+    exec(db,
+      `UPDATE plugin SET name = ?, description = ?, version = ?, author = ?,
+        type = ?, enabled = ?, installed_at = ?, ext_path = ?
+       WHERE id = ?`,
+      [merged.name || '', merged.description || '', merged.version || '',
+       merged.author || '', merged.type || 'local', merged.enabled ? 1 : 0,
+       merged.installed_at || '', merged.ext_path || '', id]
+    )
+    persistSync()
+  }
+
+  removePlugin(id) {
+    getDb().run('DELETE FROM plugin WHERE id = ?', [id])
+    persistSync()
   }
 
   // ---------- sites ----------
