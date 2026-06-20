@@ -95,12 +95,7 @@ const handleSearch = () => {
 // ---------- 文本操作 ----------
 const handleCopy = async (content) => {
   try {
-    const current = await navigator.clipboard.readText()
-    if (current === content) {
-      message.success('已复制到剪贴板')
-      return
-    }
-    await navigator.clipboard.writeText(content)
+    await window.myApi.copyClipboardText(content)
     message.success('已复制到剪贴板')
   } catch {
     message.error('复制失败')

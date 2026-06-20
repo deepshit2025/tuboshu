@@ -112,6 +112,12 @@ class ClipboardWatcher {
       tbsDbManager.removeClipboardRecord(id)
       return true
     })
+    // 用 Electron 剪贴板 API 写入文本，同步 _lastText 防止轮询误判为新增内容
+    ipcMain.handle('clipboard:text:copy', async (event, text) => {
+      this._lastText = text
+      clipboard.writeText(text)
+      return true
+    })
 
     // ---------- 图片 ----------
     ipcMain.handle('clipboard:images', async () => {
