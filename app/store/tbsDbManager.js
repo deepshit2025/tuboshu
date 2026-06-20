@@ -379,6 +379,19 @@ class TbsDbManager {
     return row?.content || ''
   }
 
+  findClipboardByContent(content) {
+    return queryOne(getDb(),
+      'SELECT id FROM clipboard_history WHERE content = ? LIMIT 1',
+      [content]
+    )
+  }
+
+  updateClipboardTimestamp(id) {
+    const db = getDb()
+    db.run('UPDATE clipboard_history SET timestamp = ? WHERE id = ?', [Date.now(), id])
+    persistSync()
+  }
+
   // ---------- clipboard images ----------
 
   addClipboardImage(filePath) {

@@ -82,7 +82,12 @@ class ClipboardWatcher {
           }
         } else if (text !== this._lastText) {
           this._lastText = text
-          tbsDbManager.addClipboardRecord(text)
+          const existing = tbsDbManager.findClipboardByContent(text)
+          if (existing) {
+            tbsDbManager.updateClipboardTimestamp(existing.id)
+          } else {
+            tbsDbManager.addClipboardRecord(text)
+          }
         }
       } catch {
         // 静默忽略
