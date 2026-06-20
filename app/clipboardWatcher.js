@@ -1,4 +1,4 @@
-import { clipboard, ipcMain } from 'electron'
+import { clipboard, ipcMain, nativeImage, shell } from 'electron'
 import path from 'path'
 import fs from 'fs/promises'
 import { constants } from 'fs'
@@ -136,7 +136,12 @@ class ClipboardWatcher {
       const result = []
       for (const item of list) {
         const dataUrl = await readFileAsDataUrl(item.file_path)
-        result.push({ ...item, dataUrl })
+        let size = 0
+        try {
+          const stat = await fs.stat(item.file_path)
+          size = stat.size
+        } catch {}
+        result.push({ ...item, dataUrl, size })
       }
       return result
     })
@@ -153,6 +158,22 @@ class ClipboardWatcher {
         await deleteFile(item.file_path)
       }
       tbsDbManager.clearClipboardFiles()
+    })
+    ipcMain.handle('clipboard:file:open', async (event, filePath) => {
+      return await shell.openPath(filePath)
+    })
+
+    // ---------- 图片复制 ----------
+    ipcMain.handle('clipboard:image:copy', async (event, filePath) => {
+      const img = nativeImage.createFromPath(filePath)
+      clipboard.writeImage(img)
+      return true
+    })
+
+    // ---------- 外部链接 ----------
+    ipcMain.handle('clipboard:url:open', async (event, url) => {
+      await shell.openExternal(url)
+      return true
     })
 
     // ---------- 开关 ----------

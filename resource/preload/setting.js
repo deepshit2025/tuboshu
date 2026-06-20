@@ -41,6 +41,13 @@ contextBridge.exposeInMainWorld('myApi', {
     clearClipboardFiles: () => ipcRenderer.invoke('clipboard:files:clear'),
 
     toggleClipboardWatch: (enabled) => ipcRenderer.invoke('clipboard:toggle', enabled),
+
+    // 新增：复制图片到系统剪贴板
+    copyClipboardImage: (filePath) => ipcRenderer.invoke('clipboard:image:copy', filePath),
+    // 新增：用系统默认程序打开文件
+    openClipboardFile: (filePath) => ipcRenderer.invoke('clipboard:file:open', filePath),
+    // 新增：在默认浏览器中打开链接
+    openLinkInBrowser: (url) => ipcRenderer.invoke('clipboard:url:open', url),
 });
 
 window.addEventListener('contextmenu', (e) => {
