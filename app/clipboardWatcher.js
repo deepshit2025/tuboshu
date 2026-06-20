@@ -163,13 +163,6 @@ class ClipboardWatcher {
       return await shell.openPath(filePath)
     })
 
-    // ---------- 文本复制（同步 _lastText 避免轮询重复记录） ----------
-    ipcMain.handle('clipboard:text:copy', async (event, text) => {
-      this._lastText = text
-      clipboard.writeText(text)
-      return true
-    })
-
     // ---------- 图片复制 ----------
     ipcMain.handle('clipboard:image:copy', async (event, filePath) => {
       const img = nativeImage.createFromPath(filePath)
