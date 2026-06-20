@@ -268,12 +268,12 @@ onUnmounted(() => {
         <!-- ========== 文本区域（瀑布流） ========== -->
         <div v-show="activeTab === 'text'">
           <n-empty v-if="textList.length === 0" description="暂无文本记录" style="padding: 60px 0;" />
-          <div v-else class="masonry">
-            <div v-for="item in textList" :key="'t' + item.id" class="masonry-card">
+          <div v-else class="text-list">
+            <div v-for="item in textList" :key="'t' + item.id" class="text-card">
               <div class="card-top">
                 <span class="card-time">{{ relativeTime(item.timestamp) }}</span>
               </div>
-              <div class="card-body" :title="item.content">{{ item.content }}</div>
+              <div class="card-body" :title="item.content" @dblclick="handleCopy(item.content)">{{ item.content }}</div>
               <div class="card-actions">
                 <n-button size="tiny" @click="handleCopy(item.content)">复制</n-button>
                 <n-button v-if="isUrl(item.content)" size="tiny" secondary @click="handleOpenUrl(item.content)">打开链接</n-button>
