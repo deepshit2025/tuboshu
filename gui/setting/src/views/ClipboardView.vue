@@ -381,33 +381,31 @@ onUnmounted(() => {
   padding: 14px;
 }
 
-/* ---------- 瀑布流（文本） ---------- */
-.masonry {
-  column-count: 3;
-  column-gap: 14px;
+/* ---------- 文本列表（一行一个卡片） ---------- */
+.text-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-@media (max-width: 900px) {
-  .masonry { column-count: 2; }
-}
-@media (max-width: 600px) {
-  .masonry { column-count: 1; }
-}
-
-.masonry-card {
-  break-inside: avoid;
-  margin-bottom: 14px;
+.text-card {
   background: var(--color-background);
   border: 1px solid var(--new-color-border);
   border-radius: 8px;
   padding: 12px 16px;
-  transition: box-shadow 0.25s, border-color 0.25s, transform 0.2s;
+  transition: box-shadow 0.25s, border-color 0.25s;
   cursor: default;
 }
-.masonry-card:hover {
+.text-card:hover {
   border-color: var(--color-border-hover);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.09);
-  transform: translateY(-2px);
+}
+
+.text-card .card-actions {
+  display: none;
+}
+.text-card:hover .card-actions {
+  display: flex;
 }
 
 .card-top {
@@ -429,13 +427,14 @@ onUnmounted(() => {
   color: var(--color-text);
   word-break: break-all;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin-bottom: 8px;
+  cursor: pointer;
   transition: -webkit-line-clamp 0s 0.2s;
 }
-.masonry-card:hover .card-body {
+.text-card:hover .card-body {
   -webkit-line-clamp: unset;
 }
 
