@@ -384,14 +384,14 @@ onUnmounted(() => {
 .text-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .text-card {
   background: var(--color-background);
   border: 1px solid var(--new-color-border);
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 8px 16px;
   transition: box-shadow 0.25s, border-color 0.25s;
   cursor: default;
 }
@@ -414,7 +414,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .card-time {
@@ -428,7 +428,7 @@ onUnmounted(() => {
   line-height: 1.5;
   color: var(--color-text);
   word-break: break-all;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   cursor: pointer;
 }
 
