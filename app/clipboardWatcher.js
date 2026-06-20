@@ -68,7 +68,7 @@ class ClipboardWatcher {
         }
 
         // 2. 检测文本
-        const text = clipboard.readText()
+        let text = clipboard.readText()
         if (!text) return
 
         // 检查是否为文件路径
