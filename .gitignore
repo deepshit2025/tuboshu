@@ -6,3 +6,4 @@ loki.db*
 out/
 .codegraph/
 reasonix.toml
+AGENTS.md
