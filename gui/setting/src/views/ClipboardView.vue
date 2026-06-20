@@ -237,7 +237,7 @@ onUnmounted(() => {
 
         <div class="toolbar-right">
           <n-input
-            v-show="activeTab === 'text'"
+            v-if="activeTab === 'text'"
             size="small"
             v-model:value="keyword"
             placeholder="搜索剪贴板内容..."
@@ -349,6 +349,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
+  min-height: 50px;
   border-bottom: 1px solid var(--new-color-border);
   background-color: var(--color-background-mute);
   flex-shrink: 0;
