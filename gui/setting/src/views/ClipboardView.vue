@@ -384,14 +384,14 @@ onUnmounted(() => {
 .text-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 }
 
 .text-card {
   background: var(--color-background);
   border: 1px solid var(--new-color-border);
   border-radius: 8px;
-  padding: 8px 16px;
+  padding: 6px 16px;
   transition: box-shadow 0.25s, border-color 0.25s;
   cursor: default;
 }
