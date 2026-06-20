@@ -274,16 +274,15 @@ onUnmounted(() => {
         <div v-show="activeTab === 'text'">
           <n-empty v-if="textList.length === 0" description="暂无文本记录" style="padding: 60px 0;" />
           <div v-else class="text-list">
-            <div v-for="item in textList" :key="'t' + item.id" class="text-card">
+            <div v-for="item in textList" :key="'t' + item.id" class="text-card" @dblclick="handleCopy(item.content)">
               <div class="card-top">
                 <span class="card-time">{{ relativeTime(item.timestamp) }}</span>
                 <div class="card-actions">
-                  <n-button size="tiny" @click="handleCopy(item.content)">复制</n-button>
                   <n-button v-if="isUrl(item.content)" size="tiny" secondary @click="handleOpenUrl(item.content)">打开链接</n-button>
                   <n-button size="tiny" quaternary @click="handleDeleteText(item.id)" class="btn-delete">删除</n-button>
                 </div>
               </div>
-              <div class="card-body" :title="item.content" @dblclick="handleCopy(item.content)">{{ item.content }}</div>
+              <div class="card-body" title="双击复制">{{ item.content }}</div>
             </div>
           </div>
         </div>
