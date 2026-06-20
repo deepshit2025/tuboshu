@@ -4,15 +4,28 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 const message = useMessage()
 const keyword = ref('')
 const isWatchEnabled = ref(false)
-const favoritesOnly = ref(false)
+const activeTab = ref('all')
 
 const fullList = ref([])
 
-// 客户端搜索：实时过滤
+// 客户端搜索 + 分类过滤
 const textList = computed(() => {
-  if (!keyword.value) return fullList.value
-  const kw = keyword.value.toLowerCase()
-  return fullList.value.filter(item => item.content.toLowerCase().includes(kw))
+  let list = fullList.value
+
+  // 分类过滤
+  if (activeTab.value === 'favorites') {
+    list = list.filter(item => item.favorite)
+  } else if (activeTab.value === 'links') {
+    list = list.filter(item => isUrl(item.content))
+  }
+
+  // 关键词搜索
+  if (keyword.value) {
+    const kw = keyword.value.toLowerCase()
+    list = list.filter(item => item.content.toLowerCase().includes(kw))
+  }
+
+  return list
 })
 
 let pollTimer = null
@@ -69,7 +82,7 @@ function escapeHtml(str) {
 // ---------- 数据加载 ----------
 const loadText = async () => {
   try {
-    fullList.value = await window.myApi.getClipboardHistory('', favoritesOnly.value)
+    fullList.value = await window.myApi.getClipboardHistory('')
   } catch {}
 }
 
@@ -175,22 +188,11 @@ onUnmounted(() => {
         </span>
 
         <div class="toolbar-right">
-          <n-button
-            size="tiny"
-            :type="favoritesOnly ? 'warning' : 'default'"
-            ghost
-            @click="favoritesOnly = !favoritesOnly; loadText()"
-            :title="favoritesOnly ? '显示全部' : '只看收藏'"
-          >
-            ★
-          </n-button>
-
           <n-input
-            size="small"
             v-model:value="keyword"
             placeholder="搜索剪贴板内容..."
             clearable
-            style="width: 200px;"
+            style="width: 280px;"
           >
             <template #prefix>
               <n-icon size="14"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></n-icon>
@@ -199,6 +201,17 @@ onUnmounted(() => {
 
           <n-button size="tiny" ghost @click="handleClear">清空</n-button>
         </div>
+      </div>
+
+      <!-- 分类选项卡 -->
+      <div class="tabs-bar">
+        <span
+          v-for="tab in [{ key: 'all', label: '全部' }, { key: 'favorites', label: '收藏' }, { key: 'links', label: '链接' }]"
+          :key="tab.key"
+          class="tab-item"
+          :class="{ active: activeTab === tab.key }"
+          @click="activeTab = tab.key"
+        >{{ tab.label }}</span>
       </div>
 
       <!-- ========== 可滚动内容区域 ========== -->
@@ -255,6 +268,33 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* ---------- 分类选项卡 ---------- */
+.tabs-bar {
+  display: flex;
+  gap: 0;
+  padding: 0 14px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--new-color-border);
+  background: var(--color-background);
+}
+.tab-item {
+  padding: 8px 18px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #888;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  user-select: none;
+}
+.tab-item:hover {
+  color: var(--color-text);
+}
+.tab-item.active {
+  color: var(--color-text);
+  border-bottom-color: #22c55e;
+  font-weight: 600;
 }
 
 /* ---------- 可滚动内容区域 ---------- */
