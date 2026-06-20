@@ -81,6 +81,7 @@ class ClipboardWatcher {
             tbsDbManager.addClipboardFile(filePath, fileName)
           }
         } else if (text !== this._lastText) {
+          text = text.trim()
           this._lastText = text
           // 内容与数据库最新记录相同 → 已在顶端，不做任何处理
           const latestContent = tbsDbManager.getLastClipboardContent()
@@ -110,12 +111,6 @@ class ClipboardWatcher {
     })
     ipcMain.handle('clipboard:delete', async (event, id) => {
       tbsDbManager.removeClipboardRecord(id)
-      return true
-    })
-    // 用 Electron 剪贴板 API 写入文本，同步 _lastText 防止轮询误判为新增内容
-    ipcMain.handle('clipboard:text:copy', async (event, text) => {
-      this._lastText = text
-      clipboard.writeText(text)
       return true
     })
 

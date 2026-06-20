@@ -329,11 +329,12 @@ class TbsDbManager {
   // ---------- clipboard history ----------
 
   addClipboardRecord(content, source = '') {
+    const trimmed = content.trim()
     const db = getDb()
     exec(db,
       `INSERT INTO clipboard_history (content, timestamp, source)
        VALUES (?, ?, ?)`,
-      [content, Date.now(), source]
+      [trimmed, Date.now(), source]
     )
     // 超过上限时删除最旧的
     const row = queryOne(db, 'SELECT value FROM setting WHERE name = ?', ['clipboardMaxHistory'])
@@ -376,13 +377,14 @@ class TbsDbManager {
     const row = queryOne(getDb(),
       'SELECT content FROM clipboard_history ORDER BY timestamp DESC LIMIT 1'
     )
-    return row?.content || ''
+    return (row?.content || '').trim()
   }
 
   findClipboardByContent(content) {
+    const trimmed = content.trim()
     return queryOne(getDb(),
       'SELECT id FROM clipboard_history WHERE content = ? LIMIT 1',
-      [content]
+      [trimmed]
     )
   }
 
