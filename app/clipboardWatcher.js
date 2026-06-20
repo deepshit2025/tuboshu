@@ -1,7 +1,6 @@
 import { clipboard, ipcMain, nativeImage, shell } from 'electron'
 import path from 'path'
 import fs from 'fs/promises'
-import { constants } from 'fs'
 import tbsDbManager from './store/tbsDbManager.js'
 import storeManager from './store/storeManager.js'
 import { initClipboardDirs, saveImage, saveFile, deleteFile, readFileAsDataUrl } from './clipboardStorage.js'
@@ -37,16 +36,6 @@ class ClipboardWatcher {
     return list.length > 0 ? list[0].id + 1 : 1
   }
 
-  async _isFilePath(text) {
-    if (!text || typeof text !== 'string') return false
-    try {
-      await fs.access(text, constants.F_OK)
-      return true
-    } catch {
-      return false
-    }
-  }
-
   _poll() {
     this._timer = setInterval(async () => {
       if (!storeManager.getSetting('clipboardWatchEnabled')) {
@@ -54,46 +43,42 @@ class ClipboardWatcher {
         return
       }
       try {
-        // 1. 检测图片（优先级最高）
-        const img = clipboard.readImage()
-        if (!img.isEmpty()) {
-          const hash = img.toPNG().toString('base64').slice(0, 100)
-          if (hash !== this._lastImageHash) {
-            this._lastImageHash = hash
-            const nextId = await this._getNextId('image')
-            const filePath = await saveImage(nextId, img)
-            tbsDbManager.addClipboardImage(filePath)
+        const formats = clipboard.availableFormats('clipboard')
+
+        // 1. 检测文本（最常见，优先处理）
+        const hasText = formats.some(f => f.startsWith('text/'))
+        if (hasText) {
+          let text = clipboard.readText()
+          if (text) {
+            text = text.trim()
+            if (text && text !== this._lastText) {
+              this._lastText = text
+              const existing = tbsDbManager.findClipboardByContent(text)
+              if (!existing) {
+                tbsDbManager.addClipboardRecord(text)
+              }
+            }
           }
-          return
         }
 
-        // 2. 检测文本
-        let text = clipboard.readText()
-        if (!text) return
-
-        // 检查是否为文件路径
-        if (await this._isFilePath(text)) {
-          if (text !== this._lastText) {
-            this._lastText = text
-            const nextId = await this._getNextId('file')
-            const fileName = path.basename(text)
-            const filePath = await saveFile(nextId, text)
-            tbsDbManager.addClipboardFile(filePath, fileName)
-          }
-        } else if (text !== this._lastText) {
-          text = text.trim()
-          this._lastText = text
-
-          // 已存在则跳过，不更新时间戳
-          const existing = tbsDbManager.findClipboardByContent(text)
-          if (!existing) {
-            tbsDbManager.addClipboardRecord(text)
+        // 2. 检测图片（仅当没有文本时）
+        const hasImage = formats.some(f => f.startsWith('image/'))
+        if (!hasText && hasImage) {
+          const img = clipboard.readImage()
+          if (!img.isEmpty()) {
+            const hash = img.toPNG().toString('base64').slice(0, 100)
+            if (hash !== this._lastImageHash) {
+              this._lastImageHash = hash
+              const nextId = await this._getNextId('image')
+              const filePath = await saveImage(nextId, img)
+              tbsDbManager.addClipboardImage(filePath)
+            }
           }
         }
       } catch {
         // 静默忽略
       }
-    }, 2000)
+    }, 1000)
   }
 
   bindIpcMain() {
