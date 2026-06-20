@@ -26,9 +26,13 @@ contextBridge.exposeInMainWorld('myApi', {
     restoreAppConfig: (data) => ipcRenderer.send('dataSync:get:data', data),
 
     // 文本
-    getClipboardHistory: (keyword) => ipcRenderer.invoke('clipboard:history', keyword),
+    getClipboardHistory: (keyword, favoritesOnly) => ipcRenderer.invoke('clipboard:history', keyword, favoritesOnly),
     clearClipboardHistory: () => ipcRenderer.invoke('clipboard:clear'),
     deleteClipboardRecord: (id) => ipcRenderer.invoke('clipboard:delete', id),
+
+    // 置顶 / 收藏
+    togglePin: (id) => ipcRenderer.invoke('clipboard:pin:toggle', id),
+    toggleFavorite: (id) => ipcRenderer.invoke('clipboard:favorite:toggle', id),
 
     // 图片
     getClipboardImages: () => ipcRenderer.invoke('clipboard:images'),

@@ -83,8 +83,8 @@ class ClipboardWatcher {
 
   bindIpcMain() {
     // ---------- 文本 ----------
-    ipcMain.handle('clipboard:history', async (event, keyword) => {
-      return tbsDbManager.getClipboardHistory(keyword)
+    ipcMain.handle('clipboard:history', async (event, keyword, favoritesOnly) => {
+      return tbsDbManager.getClipboardHistory(keyword || '', 200, !!favoritesOnly)
     })
     ipcMain.handle('clipboard:clear', async () => {
       tbsDbManager.clearClipboardHistory()
@@ -92,6 +92,16 @@ class ClipboardWatcher {
     })
     ipcMain.handle('clipboard:delete', async (event, id) => {
       tbsDbManager.removeClipboardRecord(id)
+      return true
+    })
+
+    // ---------- 置顶 / 收藏 ----------
+    ipcMain.handle('clipboard:pin:toggle', async (event, id) => {
+      tbsDbManager.togglePin(id)
+      return true
+    })
+    ipcMain.handle('clipboard:favorite:toggle', async (event, id) => {
+      tbsDbManager.toggleFavorite(id)
       return true
     })
 

@@ -4,6 +4,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 const message = useMessage()
 const keyword = ref('')
 const isWatchEnabled = ref(false)
+const favoritesOnly = ref(false)
 
 const fullList = ref([])
 
@@ -68,7 +69,7 @@ function escapeHtml(str) {
 // ---------- 数据加载 ----------
 const loadText = async () => {
   try {
-    fullList.value = await window.myApi.getClipboardHistory('')
+    fullList.value = await window.myApi.getClipboardHistory('', favoritesOnly.value)
   } catch {}
 }
 
@@ -97,6 +98,17 @@ const handleDeleteText = async (id) => {
 
 const handleOpenUrl = (url) => {
   window.myApi.openLinkInBrowser(url)
+}
+
+// ---------- 置顶 / 收藏 ----------
+const handleTogglePin = async (id) => {
+  await window.myApi.togglePin(id)
+  await loadText()
+}
+
+const handleToggleFavorite = async (id) => {
+  await window.myApi.toggleFavorite(id)
+  await loadText()
 }
 
 // ---------- 清空 ----------
@@ -163,6 +175,16 @@ onUnmounted(() => {
         </span>
 
         <div class="toolbar-right">
+          <n-button
+            size="tiny"
+            :type="favoritesOnly ? 'warning' : 'default'"
+            ghost
+            @click="favoritesOnly = !favoritesOnly; loadText()"
+            :title="favoritesOnly ? '显示全部' : '只看收藏'"
+          >
+            ★
+          </n-button>
+
           <n-input
             size="small"
             v-model:value="keyword"
@@ -183,12 +205,14 @@ onUnmounted(() => {
       <div class="box-card" v-auto-height="{ offset: 20 }">
         <n-empty v-if="textList.length === 0" description="暂无文本记录" style="padding: 60px 0;" />
         <div v-else class="text-list">
-          <div v-for="item in textList" :key="'t' + item.id" class="text-card" title="双击复制" @dblclick="handleCopy(item.content)">
+          <div v-for="item in textList" :key="'t' + item.id" class="text-card" :class="{ pinned: item.pinned }" title="双击复制" @dblclick="handleCopy(item.content)">
             <div class="card-top">
               <span class="card-time">{{ relativeTime(item.timestamp) }}</span>
               <div class="card-actions">
-                <n-button v-if="isUrl(item.content)" size="tiny" secondary @click="handleOpenUrl(item.content)">打开链接</n-button>
-                <n-button size="tiny" quaternary @click="handleDeleteText(item.id)" class="btn-delete">删除</n-button>
+                <span class="btn-icon" :class="{ active: item.pinned }" title="置顶" @click.stop="handleTogglePin(item.id)">📌</span>
+                <span class="btn-icon" :class="{ active: item.favorite }" title="收藏" @click.stop="handleToggleFavorite(item.id)">★</span>
+                <n-button v-if="isUrl(item.content)" size="tiny" secondary @click.stop="handleOpenUrl(item.content)">打开链接</n-button>
+                <n-button size="tiny" quaternary @click.stop="handleDeleteText(item.id)" class="btn-delete">删除</n-button>
               </div>
             </div>
             <div class="card-body" v-html="highlightText(item.content)"></div>
@@ -259,6 +283,10 @@ onUnmounted(() => {
   border-color: var(--color-border-hover);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.09);
 }
+.text-card.pinned {
+  border-left: 3px solid #22c55e;
+  background: rgba(34, 197, 94, 0.03);
+}
 
 .text-card .card-actions {
   opacity: 0;
@@ -307,5 +335,28 @@ onUnmounted(() => {
 }
 .btn-delete:hover {
   color: #e88080 !important;
+}
+
+/* ---------- 图标按钮（置顶/收藏） ---------- */
+.btn-icon {
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0.5;
+  transition: opacity 0.2s, transform 0.2s;
+  user-select: none;
+}
+.btn-icon:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+.btn-icon.active {
+  opacity: 1;
+}
+.btn-icon.active[title="收藏"] {
+  color: #f59e0b;
+}
+.btn-icon.active[title="置顶"] {
+  color: #22c55e;
 }
 </style>

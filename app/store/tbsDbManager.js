@@ -105,6 +105,9 @@ class TbsDbManager {
     // 1. 建表
     db.run(SCHEMA_SQL)
 
+    // 2. 迁移：添加置顶/收藏字段（若表已存在但缺列）
+    this._migrateClipboardColumns(db)
+
     // 2. 迁移旧 JSON 数据
     const oldDbPath = path.join(app.getPath('userData'), 'userdata.db')
     migrateFromLegacyDb(db, oldDbPath)
@@ -133,6 +136,21 @@ class TbsDbManager {
           [sc.name, sc.tag, sc.cmd, sc.isGlobal ? 1 : 0, sc.isOpen ? 1 : 0]
         )
       }
+    }
+  }
+
+  _migrateClipboardColumns(db) {
+    // 检查 pinned 列是否存在
+    const cols = db.prepare('PRAGMA table_info(clipboard_history)').getAll()
+    const colNames = cols.map(c => c.name)
+    if (!colNames.includes('pinned')) {
+      db.run('ALTER TABLE clipboard_history ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0')
+    }
+    if (!colNames.includes('pin_time')) {
+      db.run('ALTER TABLE clipboard_history ADD COLUMN pin_time INTEGER NOT NULL DEFAULT 0')
+    }
+    if (!colNames.includes('favorite')) {
+      db.run('ALTER TABLE clipboard_history ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0')
     }
   }
 
@@ -349,18 +367,43 @@ class TbsDbManager {
     persistSync()
   }
 
-  getClipboardHistory(keyword = '', limit = 200) {
+  getClipboardHistory(keyword = '', limit = 200, favoritesOnly = false) {
     const db = getDb()
+    const conditions = []
+    const params = []
+
     if (keyword) {
-      return queryAll(db,
-        'SELECT * FROM clipboard_history WHERE content LIKE ? ORDER BY timestamp DESC LIMIT ?',
-        [`%${keyword}%`, limit]
-      )
+      conditions.push('content LIKE ?')
+      params.push(`%${keyword}%`)
     }
+    if (favoritesOnly) {
+      conditions.push('favorite = 1')
+    }
+
+    const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : ''
+
     return queryAll(db,
-      'SELECT * FROM clipboard_history ORDER BY timestamp DESC LIMIT ?',
-      [limit]
+      `SELECT * FROM clipboard_history ${where} ORDER BY pinned DESC, pin_time DESC, timestamp DESC LIMIT ?`,
+      [...params, limit]
     )
+  }
+
+  togglePin(id) {
+    const db = getDb()
+    const row = queryOne(db, 'SELECT pinned FROM clipboard_history WHERE id = ?', [id])
+    if (!row) return
+    const newPinned = row.pinned ? 0 : 1
+    db.run(
+      'UPDATE clipboard_history SET pinned = ?, pin_time = ? WHERE id = ?',
+      [newPinned, newPinned ? Date.now() : 0, id]
+    )
+    persistSync()
+  }
+
+  toggleFavorite(id) {
+    const db = getDb()
+    db.run('UPDATE clipboard_history SET favorite = CASE WHEN favorite THEN 0 ELSE 1 END WHERE id = ?', [id])
+    persistSync()
   }
 
   clearClipboardHistory() {
