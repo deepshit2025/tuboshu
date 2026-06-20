@@ -88,7 +88,7 @@ class ClipboardWatcher {
     })
     ipcMain.handle('clipboard:clear', async () => {
       tbsDbManager.clearClipboardHistory()
-      this._lastText = ''
+      this._lastText = clipboard.readText().trim()
     })
     ipcMain.handle('clipboard:clear:pinned', async () => {
       tbsDbManager.clearClipboardPinned()
