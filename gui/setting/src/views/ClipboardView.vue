@@ -381,7 +381,7 @@ onUnmounted(() => {
   padding: 14px;
 }
 
-/* ---------- 文本列表（一行一个卡片） ---------- */
+/* ---------- 文本列表（一行一个卡片，全文显示无抖动） ---------- */
 .text-list {
   display: flex;
   flex-direction: column;
@@ -402,10 +402,13 @@ onUnmounted(() => {
 }
 
 .text-card .card-actions {
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
 }
 .text-card:hover .card-actions {
-  display: flex;
+  opacity: 1;
+  visibility: visible;
 }
 
 .card-top {
@@ -426,16 +429,8 @@ onUnmounted(() => {
   line-height: 1.5;
   color: var(--color-text);
   word-break: break-all;
-  display: -webkit-box;
-  -webkit-line-clamp: 5;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   margin-bottom: 8px;
   cursor: pointer;
-  transition: -webkit-line-clamp 0s 0.2s;
-}
-.text-card:hover .card-body {
-  -webkit-line-clamp: unset;
 }
 
 .card-actions {
