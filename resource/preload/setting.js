@@ -42,7 +42,10 @@ contextBridge.exposeInMainWorld('myApi', {
 
     toggleClipboardWatch: (enabled) => ipcRenderer.invoke('clipboard:toggle', enabled),
 
-    // 新增：复制图片到系统剪贴板
+    // 复制文本到系统剪贴板（同步 _lastText 避免轮询重复记录）
+    copyClipboardText: (text) => ipcRenderer.invoke('clipboard:text:copy', text),
+
+    // 复制图片到系统剪贴板
     copyClipboardImage: (filePath) => ipcRenderer.invoke('clipboard:image:copy', filePath),
     // 新增：用系统默认程序打开文件
     openClipboardFile: (filePath) => ipcRenderer.invoke('clipboard:file:open', filePath),
