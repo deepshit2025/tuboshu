@@ -125,9 +125,31 @@ const handleToggleFavorite = async (id) => {
 }
 
 // ---------- 清空 ----------
-const handleClear = async () => {
-  if (!window.confirm('确定要清空所有剪贴板记录吗？此操作不可恢复。')) return
-  await window.myApi.clearClipboardHistory()
+const clearOptions = [
+  { label: '清空记录', key: 'normal', subtitle: '保留置顶和收藏' },
+  { label: '清空收藏', key: 'favorites' },
+  { label: '清空置顶', key: 'pinned' },
+  { label: '全部清空', key: 'all' },
+]
+
+const handleClear = async (key) => {
+  const names = { normal: '记录', favorites: '收藏', pinned: '置顶', all: '全部' }
+  if (!window.confirm(`确定要清空${names[key]}剪贴板吗？${key === 'normal' ? '保留置顶和收藏。' : ''}此操作不可恢复。`)) return
+
+  switch (key) {
+    case 'normal':
+      await window.myApi.clearClipboardNormal()
+      break
+    case 'favorites':
+      await window.myApi.clearClipboardFavorites()
+      break
+    case 'pinned':
+      await window.myApi.clearClipboardPinned()
+      break
+    case 'all':
+      await window.myApi.clearClipboardHistory()
+      break
+  }
   fullList.value = []
   message.success('已清空')
 }
@@ -199,7 +221,9 @@ onUnmounted(() => {
             </template>
           </n-input>
 
-          <n-button size="tiny" ghost @click="handleClear">清空</n-button>
+          <n-dropdown trigger="hover" :options="clearOptions" @select="handleClear">
+            <n-button size="tiny" ghost>清空 ▾</n-button>
+          </n-dropdown>
         </div>
       </div>
 

@@ -90,6 +90,15 @@ class ClipboardWatcher {
       tbsDbManager.clearClipboardHistory()
       this._lastText = ''
     })
+    ipcMain.handle('clipboard:clear:pinned', async () => {
+      tbsDbManager.clearClipboardPinned()
+    })
+    ipcMain.handle('clipboard:clear:favorites', async () => {
+      tbsDbManager.clearClipboardFavorites()
+    })
+    ipcMain.handle('clipboard:clear:normal', async () => {
+      tbsDbManager.clearClipboardNormal()
+    })
     ipcMain.handle('clipboard:delete', async (event, id) => {
       tbsDbManager.removeClipboardRecord(id)
       return true

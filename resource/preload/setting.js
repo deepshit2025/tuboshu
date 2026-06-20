@@ -28,6 +28,9 @@ contextBridge.exposeInMainWorld('myApi', {
     // 文本
     getClipboardHistory: (keyword, favoritesOnly) => ipcRenderer.invoke('clipboard:history', keyword, favoritesOnly),
     clearClipboardHistory: () => ipcRenderer.invoke('clipboard:clear'),
+    clearClipboardPinned: () => ipcRenderer.invoke('clipboard:clear:pinned'),
+    clearClipboardFavorites: () => ipcRenderer.invoke('clipboard:clear:favorites'),
+    clearClipboardNormal: () => ipcRenderer.invoke('clipboard:clear:normal'),
     deleteClipboardRecord: (id) => ipcRenderer.invoke('clipboard:delete', id),
 
     // 置顶 / 收藏

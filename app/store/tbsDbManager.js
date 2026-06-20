@@ -411,6 +411,21 @@ class TbsDbManager {
     persistSync()
   }
 
+  clearClipboardPinned() {
+    getDb().run('DELETE FROM clipboard_history WHERE pinned = 1')
+    persistSync()
+  }
+
+  clearClipboardFavorites() {
+    getDb().run('DELETE FROM clipboard_history WHERE favorite = 1')
+    persistSync()
+  }
+
+  clearClipboardNormal() {
+    getDb().run('DELETE FROM clipboard_history WHERE pinned = 0 AND favorite = 0')
+    persistSync()
+  }
+
   removeClipboardRecord(id) {
     getDb().run('DELETE FROM clipboard_history WHERE id = ?', [id])
     persistSync()
