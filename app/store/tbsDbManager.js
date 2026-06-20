@@ -141,7 +141,7 @@ class TbsDbManager {
 
   _migrateClipboardColumns(db) {
     // 检查 pinned 列是否存在
-    const cols = db.prepare('PRAGMA table_info(clipboard_history)').getAll()
+    const cols = queryAll(db, 'PRAGMA table_info(clipboard_history)')
     const colNames = cols.map(c => c.name)
     if (!colNames.includes('pinned')) {
       db.run('ALTER TABLE clipboard_history ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0')
