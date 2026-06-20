@@ -1,11 +1,18 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const message = useMessage()
 const keyword = ref('')
 const isWatchEnabled = ref(false)
 
-const textList = ref([])
+const fullList = ref([])
+
+// 客户端搜索：实时过滤
+const textList = computed(() => {
+  if (!keyword.value) return fullList.value
+  const kw = keyword.value.toLowerCase()
+  return fullList.value.filter(item => item.content.toLowerCase().includes(kw))
+})
 
 let pollTimer = null
 
@@ -41,12 +48,12 @@ function isUrl(text) {
 // ---------- 数据加载 ----------
 const loadText = async () => {
   try {
-    textList.value = await window.myApi.getClipboardHistory(keyword.value)
+    fullList.value = await window.myApi.getClipboardHistory('')
   } catch {}
 }
 
 const handleSearch = () => {
-  loadText()
+  // 客户端已实时过滤，无需额外操作
 }
 
 // ---------- 文本操作 ----------
@@ -62,7 +69,7 @@ const handleCopy = async (content) => {
 const handleDeleteText = async (id) => {
   try {
     await window.myApi.deleteClipboardRecord(id)
-    textList.value = textList.value.filter(item => item.id !== id)
+    fullList.value = fullList.value.filter(item => item.id !== id)
   } catch (e) {
     message.error('删除失败: ' + e)
   }
@@ -76,7 +83,7 @@ const handleOpenUrl = (url) => {
 const handleClear = async () => {
   if (!window.confirm('确定要清空所有剪贴板记录吗？此操作不可恢复。')) return
   await window.myApi.clearClipboardHistory()
-  textList.value = []
+  fullList.value = []
   message.success('已清空')
 }
 
@@ -142,7 +149,6 @@ onUnmounted(() => {
             placeholder="搜索剪贴板内容..."
             clearable
             style="width: 200px;"
-            @keyup.enter="handleSearch"
           >
             <template #prefix>
               <n-icon size="14"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></n-icon>
