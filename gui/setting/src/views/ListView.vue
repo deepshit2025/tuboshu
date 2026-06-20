@@ -205,3 +205,26 @@ const handleDragChange = async () => {
 }
 
 </style>
+
+<!-- 拖拽排序视觉效果（非 scoped，SortableJS 动态添加的 class 需要） -->
+<style>
+.sortable-ghost {
+  position: relative;
+}
+.sortable-ghost .wrap {
+  opacity: 0.3;
+  border: 2px dashed #2080f0;
+  border-radius: 8px;
+  background-color: rgba(32, 128, 240, 0.06);
+}
+.sortable-chosen .wrap {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  transform: scale(1.02);
+  border-radius: 8px;
+  background-color: var(--color-background) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.sortable-chosen .drag-handle {
+  opacity: 1;
+}
+</style>
