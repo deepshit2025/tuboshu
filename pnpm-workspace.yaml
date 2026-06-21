@@ -1,3 +1,6 @@
+packages:
+  - 'gui/setting/*'
+
 onlyBuiltDependencies:
   - electron
   - electron-winstaller
