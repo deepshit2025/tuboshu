@@ -48,7 +48,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build code
-        run: pnpm electron-vite build
+        run: |
+          pnpm electron-vite build
+          cd gui/setting && npx vite build
 
       - name: Build Electron App
         run: pnpm run build --${{ matrix.platform }} --${{ matrix.arch }}

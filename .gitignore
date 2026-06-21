@@ -1,4 +1,5 @@
 dist/
+gui/dist/
 node_modules/
 .idea/
 gui/setting/node_modules/
