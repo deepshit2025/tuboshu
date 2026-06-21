@@ -44,6 +44,9 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
+      - name: Configure git to use HTTPS (fix SSH clone failure for @electron/node-gyp)
+        run: git config --global url."https://github.com/".insteadOf git@github.com:
+
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
