@@ -15,50 +15,34 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-        arch: [x64, arm64]
         include:
           - os: macos-latest
-            platform: mac
             arch: x64
+            platform: mac
           - os: macos-latest
+            arch: arm64
             platform: mac
-            arch: arm64
           - os: ubuntu-latest
-            platform: linux
             arch: x64
-          - os: ubuntu-latest
             platform: linux
-            arch: arm64
           - os: windows-latest
-            platform: win
             arch: x64
-          - os: windows-latest
             platform: win
-            arch: arm64
-
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 10
-
-      - name: Setup SSH
-        shell: bash
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          cache: 'pnpm'
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
