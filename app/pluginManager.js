@@ -54,22 +54,31 @@ class PluginManager {
   }
 
   /**
-   * 从本地路径安装插件（复制 .ext 目录到 resource/plugin/）
-   * @param {string} sourcePath - 源 .ext 目录路径
+   * 从本地路径安装插件（复制插件目录到 resource/plugin/）
+   * @param {string} sourcePath - 源插件目录路径
    * @returns {{ success: boolean, id?: string, error?: string }}
    */
   installFromLocal(sourcePath) {
     const dirName = path.basename(sourcePath)
-    if (!dirName.endsWith('.ext')) {
-      return { success: false, error: '插件目录必须以 .ext 结尾' }
+
+    // 验证源路径是目录
+    if (!fs.statSync(sourcePath).isDirectory()) {
+      return { success: false, error: '源路径必须是一个目录' }
     }
 
-    const id = dirName.replace(/\.ext$/, '')
+    // 插件 ID：目录名去掉 .ext 后缀（兼容旧命名），否则直接用目录名
+    const id = dirName.replace(/\.ext$/i, '')
     const targetDir = path.join(CONS.APP.PATH, 'resource/plugin', dirName)
 
-    // 检查是否已存在
+    // 检查文件系统是否已存在同名目录
     if (fs.existsSync(targetDir)) {
       return { success: false, error: '该插件已存在' }
+    }
+
+    // 检查数据库是否已有同名 id 的插件记录
+    const existing = tbsDbManager.getPlugin(id)
+    if (existing) {
+      return { success: false, error: `插件 ID「${id}」已被插件「${existing.name}」占用` }
     }
 
     // 读取 manifest 获取元数据

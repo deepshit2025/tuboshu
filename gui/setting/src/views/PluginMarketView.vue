@@ -93,13 +93,13 @@ async function handleUninstall(plugin) {
             <div class="plugin-info">
               <div class="plugin-name">
                 {{ plugin.name }}
+                <span class="plugin-version">v{{ plugin.version || '-' }}</span>
                 <n-tag v-if="plugin.type === 'built-in'" size="tiny" type="info" bordered>内置</n-tag>
                 <n-tag v-else size="tiny" type="success" bordered>本地</n-tag>
               </div>
-              <div class="plugin-desc">{{ plugin.description || '暂无描述' }}</div>
-              <div class="plugin-meta">
-                <span>版本: {{ plugin.version || '-' }}</span>
-                <span v-if="plugin.author"> | 作者: {{ plugin.author }}</span>
+              <div class="plugin-desc-row">
+                <span class="plugin-desc">{{ plugin.description || '暂无描述' }}</span>
+                <span v-if="plugin.author" class="plugin-author">作者: {{ plugin.author }}</span>
               </div>
             </div>
             <div class="plugin-actions">
@@ -147,14 +147,30 @@ async function handleUninstall(plugin) {
   align-items: center;
   gap: 8px;
 }
+.plugin-version {
+  font-size: 12px;
+  color: #aaa;
+  font-weight: 400;
+}
 .plugin-desc {
   font-size: 13px;
   color: #888;
-  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
 }
-.plugin-meta {
+.plugin-desc-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+.plugin-author {
   font-size: 12px;
   color: #aaa;
+  flex-shrink: 0;
 }
 .plugin-actions {
   display: flex;

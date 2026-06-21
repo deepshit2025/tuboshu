@@ -160,7 +160,7 @@ class TbsDbManager {
 
     const now = String(Date.now())
     for (const entry of entries) {
-      if (!entry.isDirectory() || !entry.name.endsWith('.ext')) continue
+      if (!entry.isDirectory()) continue
       const manifestPath = path.join(pluginsDir, entry.name, 'manifest.json')
       let manifest
       try {
@@ -169,7 +169,7 @@ class TbsDbManager {
         continue
       }
 
-      const id = entry.name.replace(/\.ext$/, '')
+      const id = entry.name.replace(/\.ext$/i, '')
       exec(db,
         `INSERT OR IGNORE INTO plugin (id, name, description, version, author, type, enabled, installed_at, ext_path)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,

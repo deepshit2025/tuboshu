@@ -94,7 +94,7 @@ const stopAnimation = ()=>{
     <div class="drag-handle">
       <n-icon size="22"><iconDragHandle /></n-icon>
     </div>
-    <n-avatar @click="handleClickOpenSite" round width="40" :src="icon"/>
+    <div class="open-site"><n-avatar @click="handleClickOpenSite" round width="40" :src="icon"/></div>
     <div class="link">
       <div> {{ element.tag }}</div>
       <div class="link-url"> {{ element.url }}</div>

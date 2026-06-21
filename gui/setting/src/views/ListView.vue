@@ -133,7 +133,7 @@ const handleDragChange = async () => {
     <n-alert :show-icon="false">
       1.点击“新增站点”，可自行添加站点，也可修改或者删除站点；<br>
       2.相同网站的站点多次添加，即可实现多开效果；<br>
-      3.拖动站点左侧手柄调整排序，结果实时同步到侧边导航栏。
+      3.拖动站点卡片任意空白区域或拖拽手柄调整排序，结果实时同步到侧边导航栏。
     </n-alert>
 
     <div class="box">
@@ -156,7 +156,8 @@ const handleDragChange = async () => {
           <draggable
             :list="list"
             itemKey="name"
-            handle=".drag-handle"
+            filter=".getIcon, .jseditor, .options, .switch, .open-site"
+            :preventOnFilter="false"
             @change="handleDragChange"
           >
             <template #item="{ element }">

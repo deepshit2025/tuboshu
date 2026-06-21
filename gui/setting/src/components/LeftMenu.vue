@@ -21,16 +21,16 @@ const menuOptions = [
     key: 'set',
   },
   {
-    label: () => h(RouterLink, {to: {name: 'feedback'}}, { default: () => '使用反馈' }),
-    key: 'feedback',
+    label: () => h(RouterLink, {to: {name: 'plugin'}}, { default: () => '插件市场' }),
+    key: 'plugin',
   },
   {
     label: () => h(RouterLink, {to: {name: 'clipboard'}}, { default: () => '剪贴板' }),
     key: 'clipboard',
   },
   {
-    label: () => h(RouterLink, {to: {name: 'plugin'}}, { default: () => '插件市场' }),
-    key: 'plugin',
+    label: () => h(RouterLink, {to: {name: 'feedback'}}, { default: () => '使用反馈' }),
+    key: 'feedback',
   }
 
 ]

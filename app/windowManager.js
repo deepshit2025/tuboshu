@@ -291,7 +291,7 @@ class WindowManager{
         ipcMain.handle('install:local-plugin', async () => {
             const result = await dialog.showOpenDialog({
                 properties: ['openDirectory'],
-                title: '选择插件目录（.ext 文件夹）'
+                title: '选择插件目录'
             })
             if (result.canceled || result.filePaths.length === 0) {
                 return { success: false, error: '已取消' }
