@@ -1,5 +1,5 @@
 packages:
-  - 'gui/setting/*'
+  - 'gui/setting'
 
 onlyBuiltDependencies:
   - electron
