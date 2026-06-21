@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <title>Loading...</title>
     <style>
+        :root {
+            --color-accent: #3498db;
+            --color-text-primary: #181818;
+            --color-text-secondary: #333;
+            --color-bg-btn: #f0f0f0;
+            --color-bg-btn-hover: #e5e5e5;
+            --color-bg-btn-active: #d9d9d9;
+            --color-border-btn: #ccc;
+            --color-error: #d32f2f;
+            --color-loader-bg: #f3f3f3;
+            --color-loader-accent: #3498db;
+            --radius-sm: 4px;
+            --space-sm: 8px;
+            --space-md: 20px;
+            --font-size-btn: 14px;
+        }
+
         .loader {
             position: fixed;
             top: 50%;
@@ -11,8 +28,8 @@
             transform: translate(-50%, -50%);
             width: 50px;
             height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
+            border: 5px solid var(--color-loader-bg);
+            border-top: 5px solid var(--color-loader-accent);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -23,32 +40,32 @@
         }
 
         .error {
-            color: red;
+            color: var(--color-error);
             text-align: center;
-            padding: 20px;
+            padding: var(--space-md);
         }
         .reload{
-            color: #181818;
+            color: var(--color-text-primary);
             font-size: 18px;
             text-align: center;
-            padding: 20px;
+            padding: var(--space-md);
         }
         .reload-btn {
             padding: 6px 12px;
-            background-color: #f0f0f0;
-            color: #333;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
+            background-color: var(--color-bg-btn);
+            color: var(--color-text-secondary);
+            border: 1px solid var(--color-border-btn);
+            border-radius: var(--radius-sm);
+            font-family: PingFang SC, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Helvetica, Arial, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN, sans-serif;
+            font-size: var(--font-size-btn);
             cursor: pointer;
         }
         .reload-btn:hover {
-            background-color: #e5e5e5;
+            background-color: var(--color-bg-btn-hover);
         }
 
         .reload-btn:active {
-            background-color: #d9d9d9;
+            background-color: var(--color-bg-btn-active);
         }
 
         @media (prefers-color-scheme: dark) {

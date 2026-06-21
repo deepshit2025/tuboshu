@@ -63,20 +63,20 @@ defineExpose({
 }
 .default-image {
   cursor: pointer;
-  border: 2px dashed #ccc;
-  border-radius: 8px;
+  border: 2px dashed var(--new-color-border);
+  border-radius: var(--radius-md);
   width: 40px;
   height: 40px;
   opacity: 0.6;
 }
 .default-image:hover {
-  border-color: #409eff;
+  border-color: var(--color-primary);
   opacity: 1;
 }
 
 .preview-image {
-  border-radius: 8px;
-  border: 2px solid #ccc;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--new-color-border);
   width: 60px;
   height: 60px;
   object-fit: cover;

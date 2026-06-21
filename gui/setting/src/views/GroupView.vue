@@ -63,7 +63,7 @@ const handleSaveForm = async (data)=>{
 
     <div class="box">
       <div class="box-title">
-        <n-button color="#2080f0" @click="addNew">
+        <n-button type="primary" @click="addNew">
           <template #icon>
             <n-icon color="#fff"> <iconAddNew /></n-icon>
           </template>
@@ -76,7 +76,7 @@ const handleSaveForm = async (data)=>{
           <template v-for="element in listData"  v-if="listData && listData.length > 0">
             <GroupItem :element="element" :list="list" @edit="handleEdit" @remove="handleRemove" @change="handleSaveForm" />
           </template>
-          <div v-else style="color: #888;font-size:14px;">没有分组数据</div>
+          <div v-else style="color: var(--color-text-tertiary);font-size:14px;">没有分组数据</div>
         </div>
       </div>
 

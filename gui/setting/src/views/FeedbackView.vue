@@ -19,8 +19,8 @@
         <n-tag :bordered="false" type="info" size="small">Telegram:</n-tag>
         <a target="_blank" href="https://t.me/shaziaicom">https://t.me/shaziaicom</a><br>
       </n-space>
-      <n-p style="color: #666;">微信加群请先添+wx，需备注：Tuboshu </n-p>
-      <n-p style="color: #666;">欢迎定制功能咨询 </n-p>
+      <n-p style="color: var(--color-text-secondary);">微信加群请先添+wx，需备注：Tuboshu </n-p>
+      <n-p style="color: var(--color-text-secondary);">欢迎定制功能咨询 </n-p>
     </n-card>
   </div>
 </template>

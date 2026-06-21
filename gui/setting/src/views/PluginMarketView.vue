@@ -83,7 +83,7 @@ async function handleUninstall(plugin) {
     </div>
 
     <n-spin :show="loading">
-      <div v-if="plugins.length === 0 && !loading" style="text-align: center; padding: 2rem; color: #999;">
+      <div v-if="plugins.length === 0 && !loading" style="text-align: center; padding: 2rem; color: var(--color-text-tertiary);">
         暂无插件
       </div>
 
@@ -149,12 +149,12 @@ async function handleUninstall(plugin) {
 }
 .plugin-version {
   font-size: 12px;
-  color: #aaa;
+  color: var(--color-text-tertiary);
   font-weight: 400;
 }
 .plugin-desc {
   font-size: 13px;
-  color: #888;
+  color: var(--color-text-tertiary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -169,7 +169,7 @@ async function handleUninstall(plugin) {
 }
 .plugin-author {
   font-size: 12px;
-  color: #aaa;
+  color: var(--color-text-tertiary);
   flex-shrink: 0;
 }
 .plugin-actions {

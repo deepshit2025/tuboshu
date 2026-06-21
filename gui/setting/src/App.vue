@@ -24,18 +24,42 @@ onUnmounted(() => {
   mediaQuery.removeEventListener('change', handleChange);
 });
 
+// Naive UI 主题覆盖 — 统一按钮色、卡片圆角等
+const themeOverrides = {
+  common: {
+    primaryColor: '#2080f0',
+    primaryColorHover: '#409eff',
+    primaryColorPressed: '#1a6fd0',
+    borderRadius: '8px',
+    borderRadiusSmall: '4px',
+  },
+  Button: {
+    borderRadius: '8px',
+    fontSizeMedium: '14px',
+  },
+  Card: {
+    borderRadius: '8px',
+  },
+  Switch: {
+    railColorActive: '#10A37F',
+  },
+  Tag: {
+    borderRadius: '4px',
+  }
+}
+
 </script>
 
 <template>
   <n-message-provider>
   <div id="left">
-    <n-config-provider :theme="theme">
+    <n-config-provider :theme="theme" :theme-overrides="themeOverrides">
     <LeftMenu />
     </n-config-provider>
   </div>
 
   <div id="right">
-    <n-config-provider :theme="theme">
+    <n-config-provider :theme="theme" :theme-overrides="themeOverrides">
     <RouterView />
     </n-config-provider>
   </div>

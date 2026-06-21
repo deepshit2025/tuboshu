@@ -3,6 +3,22 @@
     padding: 0;
     box-sizing: border-box;
 }
+
+/* ===== Design Tokens ===== */
+:root {
+    --sidebar-bg: #f1f1f1;
+    --sidebar-bg-dark: #111;
+    --content-bg: #fefefe;
+    --logo-bg: #eee;
+    --logo-bg-dark: #333;
+    --logo-hover-bg: #d1d1d1;
+    --logo-hover-bg-dark: #333;
+    --highlight-bg: white;
+    --highlight-bg-dark: #232327;
+    --accent-green: #10A37F;
+    --sidebar-shadow: 2px 0 6px rgba(0, 0, 0, 0.12);
+}
+
 body{
     margin: 0;
     padding: 0;
@@ -17,8 +33,8 @@ body{
 #left{
     width: 50px;
     height: 100vh;
-    background: #f1f1f1;
-    box-shadow: 5px 0 5px -2px rgba(0, 0, 0, 0.3);
+    background: var(--sidebar-bg);
+    box-shadow: var(--sidebar-shadow);
 }
 
 #nav-wrapper{
@@ -39,7 +55,7 @@ body{
     align-items: center;
     width: calc(100% - 50px);
     height: 100vh;
-    background: #fefefe;
+    background: var(--content-bg);
 }
 
 .logo{
@@ -61,7 +77,7 @@ body{
     justify-content: center;
     align-items: center;
     border-radius: 50%;
-    background: #eee;
+    background: var(--logo-bg);
     overflow: hidden;
 }
 
@@ -73,13 +89,13 @@ body{
 }
 
 .logo:hover{
-    background: #d1d1d1;
+    background: var(--logo-hover-bg);
     filter: grayscale(0%);
 }
 
 .highlighted .logo{
-    border-left: 3px solid #10A37F;
-    background: white;
+    border-left: 3px solid var(--accent-green);
+    background: var(--highlight-bg);
     filter: grayscale(0%);
 }
 
@@ -90,15 +106,15 @@ body{
 
 @media (prefers-color-scheme: dark) {
     #left{
-        background: #111;
+        background: var(--sidebar-bg-dark);
     }
 
     .logo:hover{
-        background: #333;
+        background: var(--logo-hover-bg-dark);
     }
 
     .highlighted .logo{
-        border-left: 3px solid #10A37F;
-        background: #232327;
+        border-left: 3px solid var(--accent-green);
+        background: var(--highlight-bg-dark);
     }
 }

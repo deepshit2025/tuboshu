@@ -32,7 +32,7 @@ const props = defineProps({
 }
 
 .name{
-  color: #333;
+  color: var(--color-text);
   font-size: 12px;
   padding: 2px;
   white-space: nowrap;

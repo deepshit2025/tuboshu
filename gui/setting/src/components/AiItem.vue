@@ -36,7 +36,7 @@ const handleClick = () => {
 
 .name{
   font-weight: bold;
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 12px;
   padding: 5px;
   white-space: nowrap;

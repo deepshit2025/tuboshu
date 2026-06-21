@@ -284,7 +284,7 @@ onUnmounted(() => {
 }
 .toolbar-hint {
   font-size: 12px;
-  color: #888;
+  color: var(--color-text-tertiary);
   flex-shrink: 0;
 }
 .toolbar-right {
@@ -307,7 +307,7 @@ onUnmounted(() => {
   padding: 8px 18px;
   font-size: 13px;
   cursor: pointer;
-  color: #888;
+  color: var(--color-text-tertiary);
   border-bottom: 2px solid transparent;
   transition: color 0.2s, border-color 0.2s;
   user-select: none;
@@ -317,7 +317,7 @@ onUnmounted(() => {
 }
 .tab-item.active {
   color: var(--color-text);
-  border-bottom-color: #22c55e;
+  border-bottom-color: var(--color-accent-green);
   font-weight: 600;
 }
 
@@ -338,18 +338,18 @@ onUnmounted(() => {
 .text-card {
   background: var(--color-background);
   border: 1px solid var(--new-color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 6px 16px;
   transition: box-shadow 0.25s, border-color 0.25s;
   cursor: default;
 }
 .text-card:hover {
   border-color: var(--color-border-hover);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.09);
+  box-shadow: var(--shadow-md);
 }
 .text-card.pinned {
-  border-left: 3px solid #22c55e;
-  background: rgba(34, 197, 94, 0.03);
+  border-left: 3px solid var(--color-accent-green);
+  background: rgba(16, 163, 127, 0.04);
 }
 
 .text-card .card-actions {
@@ -371,7 +371,7 @@ onUnmounted(() => {
 
 .card-time {
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-tertiary);
   white-space: nowrap;
 }
 
@@ -384,7 +384,7 @@ onUnmounted(() => {
   cursor: pointer;
 }
 .card-body :deep(.highlight) {
-  color: #22c55e;
+  color: var(--color-accent-green);
   font-weight: 700;
 }
 
@@ -395,10 +395,10 @@ onUnmounted(() => {
 }
 
 .btn-delete {
-  color: #999;
+  color: var(--color-text-tertiary);
 }
 .btn-delete:hover {
-  color: #e88080 !important;
+  color: var(--color-semantic-error) !important;
 }
 
 /* ---------- 图标按钮（置顶/收藏） ---------- */
@@ -418,9 +418,9 @@ onUnmounted(() => {
   opacity: 1;
 }
 .btn-icon.active[title="收藏"] {
-  color: #f59e0b;
+  color: var(--color-semantic-warning);
 }
 .btn-icon.active[title="置顶"] {
-  color: #22c55e;
+  color: var(--color-accent-green);
 }
 </style>

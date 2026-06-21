@@ -138,7 +138,7 @@ const handleDragChange = async () => {
 
     <div class="box">
       <div class="box-title">
-          <n-button color="#2080f0" @click="addNew">
+          <n-button type="primary" @click="addNew">
           <template #icon>
             <n-icon color="#fff">
               <iconAddNew />
@@ -211,15 +211,15 @@ const handleDragChange = async () => {
 <style>
 .sortable-ghost {
   opacity: 0.3;
-  outline: 2px dashed #2080f0;
+  outline: 2px dashed var(--color-primary);
   outline-offset: -2px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background-color: rgba(32, 128, 240, 0.06);
 }
 .sortable-chosen {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-lg);
   transform: scale(1.02);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background-color: var(--color-background) !important;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }

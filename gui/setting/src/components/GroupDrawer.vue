@@ -102,7 +102,7 @@ const updateOpenMenu = (e)=> {
 
       <br />
       <n-alert :show-icon="false">
-        <p style="color:#888;">
+        <p style="color: var(--color-text-secondary);">
           可拖动添加或者删除分组内的站点<br />
           分组内的站点也可以拖动排序<br />
         </p>
@@ -110,14 +110,14 @@ const updateOpenMenu = (e)=> {
 
       <template #footer>
         <div class="flex-footer">
-          <n-button color="#888" @click="handleClose">
+          <n-button @click="handleClose">
             <template #icon>
               <n-icon color="#fff"> <iconCancel /> </n-icon>
             </template>
             取消
           </n-button>
 
-          <n-button color="#2080f0" @click="handleSave">
+          <n-button type="primary" @click="handleSave">
             <template #icon>
               <n-icon color="#fff"> <iconSave /></n-icon>
             </template>

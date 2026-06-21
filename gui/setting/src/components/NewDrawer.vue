@@ -62,7 +62,7 @@ const handleSave = () => {
 
       <br>
       <n-alert :show-icon="false">
-        <p style="color:#888;">
+        <p style="color: var(--color-text-secondary);">
           代理格式规则:<br>
           HTTP/HTTPS 代理：http://host:port <br>
           SOCKS 代理：socks://host:port<br>
@@ -73,14 +73,14 @@ const handleSave = () => {
 
       <template #footer>
         <div class="flex-footer">
-          <n-button color="#888" @click="handleClose">
+          <n-button @click="handleClose">
             <template #icon>
               <n-icon color="#fff"> <iconCancel /> </n-icon>
             </template>
             取消
           </n-button>
 
-          <n-button color="#2080f0" @click="handleSave">
+          <n-button type="primary" @click="handleSave">
             <template #icon>
               <n-icon color="#fff"> <iconSave /></n-icon>
             </template>

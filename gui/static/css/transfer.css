@@ -4,6 +4,10 @@
     --icon-bg: #f0f0f0;
     --icon-item-bg:#e8e8e8;
     --icon-filter: none;
+    --primary-color: #2080f0;
+    --icon-radius: 50%;
+    --card-radius: 8px;
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 @media (prefers-color-scheme: dark) {

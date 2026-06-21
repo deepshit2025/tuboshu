@@ -366,7 +366,7 @@ const handleClose = () =>{
       <n-drawer-content title="支持作者" closable>
         <n-alert :show-icon="false">
           <div class="flex-box">
-          <p style="color:#666; padding: 30px;">
+          <p style="color: var(--color-text-secondary); padding: 30px;">
             如果本软件对您有帮助，请赞助作者<br>
             如有定制功能的需求，欢迎咨询...
           </p>
