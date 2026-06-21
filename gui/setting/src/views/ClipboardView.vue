@@ -384,7 +384,7 @@ onUnmounted(() => {
   cursor: pointer;
 }
 .card-body :deep(.highlight) {
-  color: var(--color-accent-green);
+  color: var(--color-accent-cyan);
   font-weight: 700;
 }
 
@@ -421,6 +421,6 @@ onUnmounted(() => {
   color: var(--color-semantic-warning);
 }
 .btn-icon.active[title="置顶"] {
-  color: var(--color-accent-green);
+  color: var(--color-accent-cyan);
 }
 </style>

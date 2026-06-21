@@ -6,24 +6,24 @@
 
 /* ===== Design Tokens ===== */
 :root {
-    --sidebar-bg: #f1f1f1;
-    --sidebar-bg-dark: #111;
-    --content-bg: #fefefe;
-    --logo-bg: #eee;
-    --logo-bg-dark: #333;
-    --logo-hover-bg: #d1d1d1;
-    --logo-hover-bg-dark: #333;
+    --sidebar-bg: #f1f5f9;
+    --sidebar-bg-dark: #0f172a;
+    --content-bg: #f8fafc;
+    --logo-bg: #e2e8f0;
+    --logo-bg-dark: #334155;
+    --logo-hover-bg: #cbd5e1;
+    --logo-hover-bg-dark: #475569;
     --highlight-bg: white;
-    --highlight-bg-dark: #232327;
-    --accent-green: #10A37F;
-    --sidebar-shadow: 2px 0 6px rgba(0, 0, 0, 0.12);
+    --highlight-bg-dark: #1e293b;
+    --accent-cyan: #06b6d4;
+    --sidebar-shadow: 1px 0 3px rgba(0, 0, 0, 0.08);
 }
 
 body{
     margin: 0;
     padding: 0;
     overflow: hidden;
-    font-family: PingFang SC, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Helvetica, Arial, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN, sans-serif;
+    font-family: Inter, PingFang SC, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Helvetica, Arial, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN, sans-serif;
 }
 #content{
     display: flex;
@@ -94,7 +94,7 @@ body{
 }
 
 .highlighted .logo{
-    border-left: 3px solid var(--accent-green);
+    border-left: 3px solid var(--accent-cyan);
     background: var(--highlight-bg);
     filter: grayscale(0%);
 }
@@ -114,7 +114,7 @@ body{
     }
 
     .highlighted .logo{
-        border-left: 3px solid var(--accent-green);
+        border-left: 3px solid var(--accent-cyan);
         background: var(--highlight-bg-dark);
     }
 }

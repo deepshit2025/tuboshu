@@ -1,21 +1,21 @@
 :root {
-    --bg-color: #ffffff;
-    --text-color: #000000;
-    --icon-bg: #f0f0f0;
-    --icon-item-bg:#e8e8e8;
+    --bg-color: #f8fafc;
+    --text-color: #0f172a;
+    --icon-bg: #f1f5f9;
+    --icon-item-bg:#e2e8f0;
     --icon-filter: none;
-    --primary-color: #2080f0;
+    --primary-color: #3b82f6;
     --icon-radius: 50%;
-    --card-radius: 8px;
-    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --card-radius: 6px;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg-color: #1D1D1D;
-        --text-color: #e0e0e0;
-        --icon-bg: #333333;
-        --icon-item-bg:#555;
+        --bg-color: #0f172a;
+        --text-color: #f8fafc;
+        --icon-bg: #1e293b;
+        --icon-item-bg:#334155;
         --icon-filter: invert(0.9);
     }
 }
@@ -32,7 +32,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    font-family: PingFang SC, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Helvetica, Arial, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN, sans-serif;
+    font-family: Inter, PingFang SC, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Helvetica, Arial, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
     transition: background-color 0.3s ease, color 0.3s ease;

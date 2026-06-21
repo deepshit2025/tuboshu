@@ -1,25 +1,25 @@
 :root {
   --vt-c-white: #ffffff;
-  --vt-c-white-soft: #f8f8f8;
-  --vt-c-white-mute: #f2f2f2;
+  --vt-c-white-soft: #f1f5f9;
+  --vt-c-white-mute: #e2e8f0;
 
-  --vt-c-black: #181818;
-  --vt-c-black-soft: #222222;
-  --vt-c-black-mute: #282828;
+  --vt-c-black: #0f172a;
+  --vt-c-black-soft: #1e293b;
+  --vt-c-black-mute: #334155;
 
-  --vt-c-indigo: #2c3e50;
-  --vt-new-border: #e7e7e7;
+  --vt-c-indigo: #1e293b;
+  --vt-new-border: #e2e8f0;
 
 
-  --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
-  --vt-c-divider-light-2: rgba(60, 60, 60, 0.12);
-  --vt-c-divider-dark-1: rgba(84, 84, 84, 0.65);
-  --vt-c-divider-dark-2: rgba(84, 84, 84, 0.48);
+  --vt-c-divider-light-1: rgba(100, 116, 139, 0.25);
+  --vt-c-divider-light-2: rgba(100, 116, 139, 0.08);
+  --vt-c-divider-dark-1: rgba(148, 163, 184, 0.5);
+  --vt-c-divider-dark-2: rgba(148, 163, 184, 0.2);
 
-  --vt-c-text-light-1: var(--vt-c-indigo);
-  --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
-  --vt-c-text-dark-1: var(--vt-c-white);
-  --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
+  --vt-c-text-light-1: #0f172a;
+  --vt-c-text-light-2: #475569;
+  --vt-c-text-dark-1: #f8fafc;
+  --vt-c-text-dark-2: #94a3b8;
 }
 
 /* semantic color variables for this project */
@@ -38,20 +38,20 @@
   --section-gap: 160px;
 }
 
-/* ===== Design Tokens (restyle) ===== */
+/* Design Tokens (shadcn 冷色调) */
 :root {
   /* Brand colors */
-  --color-primary: #2080f0;
-  --color-accent-green: #10A37F;
+  --color-primary: #3b82f6;
+  --color-accent-cyan: #06b6d4;
 
   /* Text hierarchy */
-  --color-text-secondary: #666;
-  --color-text-tertiary: #999;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #94a3b8;
 
   /* Semantic colors */
-  --color-semantic-success: #22c55e;
+  --color-semantic-success: #10b981;
   --color-semantic-warning: #f59e0b;
-  --color-semantic-error: #d32f2f;
+  --color-semantic-error: #ef4444;
 
   /* Spacing tokens (4px grid) */
   --space-xs: 4px;
@@ -62,14 +62,14 @@
 
   /* Radius tokens */
   --radius-sm: 4px;
-  --radius-md: 8px;
+  --radius-md: 6px;
   --radius-lg: 12px;
   --radius-full: 50%;
 
-  /* Shadow tokens */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+  /* Shadow tokens (shadcn style) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -78,12 +78,12 @@
     --color-background-soft: var(--vt-c-black-soft);
     --color-background-mute: var(--vt-c-black-mute);
 
-    --new-color-border: var(--vt-c-divider-dark-2);
-    --color-border: var(--vt-c-divider-dark-2);
-    --color-border-hover: var(--vt-c-divider-dark-1);
+    --new-color-border: #334155;
+    --color-border: #334155;
+    --color-border-hover: #475569;
 
     --color-heading: var(--vt-c-text-dark-1);
-    --color-text: var(--vt-c-text-dark-2);
+    --color-text: var(--vt-c-text-dark-1);
   }
 }
 
@@ -103,7 +103,7 @@ body {
     color 0.5s,
     background-color 0.5s;
   line-height: 1.6;
-  font-family: PingFang SC, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Helvetica, Arial, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN, sans-serif;
+  font-family: Inter, PingFang SC, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Helvetica, Arial, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN, sans-serif;
   font-size: 16px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

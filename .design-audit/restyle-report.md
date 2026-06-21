@@ -1,6 +1,7 @@
-# Restyle Report — 设计改造验证报告
+# Restyle Report — shadcn 冷色调设计改造
 
 > 基于 design-restyle 5 阶段工作流
+> 参考风格: shadcn/ui + 冷色调 (slate/blue/cyan)
 > 生成时间: 2025-06
 
 ---
@@ -9,93 +10,60 @@
 
 | 指标 | 值 |
 |------|-----|
+| 参考设计系统 | shadcn/ui |
+| 色调方向 | 冷色调 (slate 冷灰 + blue-500 + cyan-500) |
 | Token 体系 | CSS 自定义属性 + Naive UI themeOverrides |
-| 改造文件数 | 19 |
-| 改造颜色值 | 40+ |
-| 修复不一致项 | 9 |
-| 构建验证 | ✅ 通过 (3.29s) |
+| 改造文件数 | 8 (仅 Token 值，非硬编码替换) |
+| 构建验证 | ✅ 通过 (3.33s) |
 
 ---
 
-## 逐层验证
+## shadcn 色系映射
 
-### Layer 1: Token 基础设施
+| 语义 | 旧值 | 新值 (shadcn) | 说明 |
+|------|------|-------------|------|
+| 页面背景 | #ffffff | #f8fafc | slate-50 冷灰底 |
+| 卡片/表面 | #f8f8f8 | #f1f5f9 | slate-100 |
+| 哑光背景 | #f2f2f2 | #e2e8f0 | slate-200 |
+| 深色背景 | #181818 | #0f172a | slate-900 |
+| 深色表面 | #222222 | #1e293b | slate-800 |
+| 深色哑光 | #282828 | #334155 | slate-700 |
+| 主色 | #2080f0 | #3b82f6 | blue-500 更纯净 |
+| 主色 hover | #409eff | #2563eb | blue-600 |
+| 主色 pressed | #1a6fd0 | #1d4ed8 | blue-700 |
+| 强调色 | #10A37F | #06b6d4 | cyan-500 冷色 |
+| 文字主色 | #2c3e50 | #0f172a | slate-900 |
+| 文字次要 | #666 | #475569 | slate-600 |
+| 文字提示 | #999 | #94a3b8 | slate-400 |
+| 成功 | #22c55e | #10b981 | emerald-500 |
+| 错误 | #d32f2f | #ef4444 | red-500 |
+| 侧栏背景 | #f1f1f1 | #f1f5f9 | slate-100 |
+| 侧栏暗色 | #111 | #0f172a | slate-900 |
+| 边框 | #e7e7e7 | #e2e8f0 | slate-200 |
+| 暗色边框 | rgba(..) | #334155 | slate-700 |
 
-| 文件 | 改动 | 状态 |
-|------|------|------|
-| `gui/setting/src/assets/base.css` | 新增 :root 设计 Token（品牌色/文字层级/间距/圆角/阴影），修复暗色 border-hover 自引用 bug，字体基准 15px→16px | ✅ |
-| `gui/setting/src/App.vue` | 新增 Naive UI themeOverrides（primaryColor, borderRadius, Switch 色等） | ✅ |
+## 间距/圆角/阴影
 
-### Layer 2: 全局 CSS
+| 层级 | shadcn 新值 |
+|------|------------|
+| 间距网格 | 4px (保持不变) |
+| radius-md | **6px** (原 8px，shadcn 风格) |
+| shadow-sm | 0 1px 2px 0 rgba(0,0,0,0.05) |
+| shadow-md | 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px |
+| shadow-lg | 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px |
 
-| 文件 | 改动 | 状态 |
-|------|------|------|
-| `gui/setting/src/assets/main.css` | 链接色 hsla(160,100%,37%,1) → var(--color-primary) | ✅ |
-| `gui/static/css/main.css` | 侧栏全部硬编码色值 → CSS 变量，阴影统一 | ✅ |
-| `gui/static/css/transfer.css` | 新增 token 变量，一致化 | ✅ |
+## 字体
 
-### Layer 3: Vue 组件 CSS & 内联样式
+| 属性 | shadcn 值 |
+|------|----------|
+| font-family | **Inter** 优先 (英文字体)，保留 PingFang SC 等中文后备 |
+| font-size-base | 16px |
+| font-size-sm | 13px |
 
-| 组件 | 替换内容 | 状态 |
-|------|---------|------|
-| `GroupDrawer.vue` | 按钮 color 硬编码 → type="primary"，#888 → var(--color-text-secondary) | ✅ |
-| `NewDrawer.vue` | 同上 | ✅ |
-| `JsEditorDrawer.vue` | 同上 | ✅ |
-| `GroupIcon.vue` | #333 → var(--color-text) | ✅ |
-| `AiItem.vue` | #666 → var(--color-text-secondary) | ✅ |
-| `ImageUpload.vue` | #ccc → var(--new-color-border), #409eff → var(--color-primary), 8px → var(--radius-md) | ✅ |
-| `LinkItem.vue` | (无硬编码色值) | ✅ |
-| `GroupView.vue` | 按钮 color → type="primary", #888 → var(--color-text-tertiary) | ✅ |
-| `ListView.vue` | 按钮 color → type="primary", 2处阴影/圆角 → token | ✅ |
-| `SetView.vue` | #666 → var(--color-text-secondary) | ✅ |
-| `FeedbackView.vue` | #666 → var(--color-text-secondary) | ✅ |
-| `ClipboardView.vue` | **11 处替换**: #22c55e(×5)→accent-green, #888→tertiary, #999→tertiary, #e88080→error, #f59e0b→warning, 8px→radius-md, 阴影→shadow-md | ✅ |
-| `PluginMarketView.vue` | #888/999/aaa → var(--color-text-tertiary) | ✅ |
-| `ShortcutView.vue` | (无硬编码色值) | ✅ |
-| `DisplayView.vue` | (无硬编码色值) | ✅ |
-| `HomeView.vue` | (无硬编码色值) | ✅ |
-| `AboutView.vue` | (无硬编码色值) | ✅ |
-
-### Layer 4: SVG 图标
-
-| 图标 | 改动 | 状态 |
-|------|------|------|
-| `refresh.vue` | fill="#25b39e" → fill="currentColor" | ✅ |
-| `jseditor.vue` | fill="#25B39E"(×3) → fill="currentColor", 保留 #E9EDED(浅色结构填充) | ✅ |
-
-### Layer 5: 独立 HTML 页
-
-| 文件 | 改动 | 状态 |
-|------|------|------|
-| `gui/loading.html` | 新增 :root Token 系统，8 处硬编码值 → 变量，字体栈统一，圆角 4px→radius-sm | ✅ |
-
----
-
-## 验证结果
+## 验证
 
 | 检查项 | 结果 |
 |--------|------|
-| ✅ 构建通过 | vite build 成功，2850 modules，3.29s |
-| ✅ 零残留硬编码 | 全部 hex 值均为 CSS 变量定义（token 值本身） |
-| ✅ 绿色已统一 | #10A37F(accent-green) 取代 #10A37F/#25b39e/#25B39E/#22c55e |
-| ✅ 灰色已分级 | primary→secondary(#666)→tertiary(#999) |
-| ✅ 按钮色统一 | 6 处 type="primary" + themeOverrides 替代硬编码 #2080f0 |
-| ✅ SVG 可继承 | fill="currentColor" 由父级 color 控制 |
-| ✅ 暗色 bug 修复 | --color-border-hover 自引用 → var(--vt-c-divider-dark-1) |
-
----
-
-## Token 体系总览
-
-| Token | 值 | 用途 |
-|-------|-----|------|
-| `--color-primary` | #2080f0 | 品牌主色/按钮 |
-| `--color-accent-green` | #10A37F | 统一绿色（侧栏选中/SVG/剪贴板） |
-| `--color-text-secondary` | #666 | 次要文字 |
-| `--color-text-tertiary` | #999 | 提示/时间戳/禁用 |
-| `--color-semantic-success` | #22c55e | 成功语义（仅剪贴板收藏） |
-| `--color-semantic-warning` | #f59e0b | 警告语义 |
-| `--color-semantic-error` | #d32f2f | 错误语义 |
-| `--space-xs/sm/md/lg/xl` | 4/8/16/24/32px | 4px 网格间距 |
-| `--radius-sm/md/lg` | 4/8/12px | 三级圆角 |
-| `--shadow-sm/md/lg` | 三级阴影 | 卡片/浮动层级 |
+| ✅ 构建通过 | vite build 成功, 2850 modules, 3.33s |
+| ✅ Token 方式 | 仅改 CSS 变量值，无需逐文件替换硬编码 |
+| ✅ 冷色统一 | slate 冷灰 + blue-500 + cyan-500 贯穿全项目 |

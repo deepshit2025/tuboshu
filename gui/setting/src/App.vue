@@ -24,27 +24,38 @@ onUnmounted(() => {
   mediaQuery.removeEventListener('change', handleChange);
 });
 
-// Naive UI 主题覆盖 — 统一按钮色、卡片圆角等
+// Naive UI 主题覆盖 — shadcn 冷色调
 const themeOverrides = {
   common: {
-    primaryColor: '#2080f0',
-    primaryColorHover: '#409eff',
-    primaryColorPressed: '#1a6fd0',
-    borderRadius: '8px',
+    primaryColor: '#3b82f6',
+    primaryColorHover: '#2563eb',
+    primaryColorPressed: '#1d4ed8',
+    borderRadius: '6px',
     borderRadiusSmall: '4px',
   },
   Button: {
-    borderRadius: '8px',
+    borderRadius: '6px',
     fontSizeMedium: '14px',
+    fontWeight: '500',
   },
   Card: {
-    borderRadius: '8px',
+    borderRadius: '6px',
   },
   Switch: {
-    railColorActive: '#10A37F',
+    railColorActive: '#06b6d4',
   },
   Tag: {
     borderRadius: '4px',
+  },
+  Menu: {
+    itemBorderRadius: '6px',
+    itemHeight: '40px',
+  },
+  Input: {
+    borderRadius: '6px',
+  },
+  Drawer: {
+    borderRadius: '6px',
   }
 }
 
