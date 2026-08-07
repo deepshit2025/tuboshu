@@ -12,6 +12,19 @@ const CHROME_VERSIONS = [
   '134.0.6998.88', '134.0.6998.118', '134.0.6998.165', '134.0.6998.178',
 ]
 
+// ── UA-CH GREASE 品牌算法（与 Chromium components/embedder_support/user_agent_utils.cc 完全一致）──
+const GREASE_CHARS = [' ', '(', ':', '-', '.', '/', ')', ';', '=', '?', '_']
+const GREASE_VERSIONS = ['8', '99', '24']
+// 稳定排列：shuffled[order[i]] = list[i]，order = orders[seed % 6]
+const BRAND_ORDERS = [
+  [0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0],
+]
+
+const WEBKIT_VERSION = '537.36'
+
+// identity.json 结构版本：生成逻辑变更时 +1，触发旧缓存重新生成
+const IDENTITY_VERSION = 2
+
 class BrowserEnv {
   constructor() {
     this.identityPath = null
@@ -19,12 +32,6 @@ class BrowserEnv {
   }
 
   // ── 公开接口 ──
-
-  /** 供 preload 使用的完整身份对象 */
-  getIdentity() {
-    this.#ensure()
-    return this.env.identity
-  }
 
   /** 供 HTTP header 改写使用的 headers */
   getHeaders() {
@@ -52,10 +59,13 @@ class BrowserEnv {
   #loadFromDisk() {
     try {
       if (fs.existsSync(this.identityPath)) {
-        const raw = fs.readFileSync(this.identityPath, 'utf-8')
-        const data = JSON.parse(raw)
-        // 基本校验
-        if (data?.identity?.navigator?.userAgent && data?.headers?.['user-agent']) {
+        const data = JSON.parse(fs.readFileSync(this.identityPath, 'utf-8'))
+        // 结构版本不匹配时重新生成，避免旧缓存与新逻辑不一致
+        if (
+          data?.version === IDENTITY_VERSION &&
+          data?.identity?.navigator?.userAgent &&
+          data?.headers?.['user-agent']
+        ) {
           return data
         }
       }
@@ -77,33 +87,19 @@ class BrowserEnv {
   #generate() {
     const osInfo = this.#detectOS()
     const chromeVersion = this.#pickChromeVersion()
-    const chromeMajor = chromeVersion.split('.')[0]
 
-    // ── 平台字符串 ──
-    const platformStr = this.#buildPlatformString(osInfo)
-    // ── UA ──
-    const webkitVer = '537.36'
-    const ua = `Mozilla/5.0 (${platformStr}) AppleWebKit/${webkitVer} (KHTML, like Gecko) Chrome/${chromeVersion} Safari/${webkitVer}`
-    const appVersion = `5.0 (${platformStr}) AppleWebKit/${webkitVer} (KHTML, like Gecko) Chrome/${chromeVersion} Safari/${webkitVer}`
+    // ── UA（navigator.appVersion 由引擎从 UA 派生，无需单独生成）──
+    const ua = `Mozilla/5.0 (${osInfo.platformString}) AppleWebKit/${WEBKIT_VERSION} (KHTML, like Gecko) Chrome/${chromeVersion} Safari/${WEBKIT_VERSION}`
 
-    // ── Sec-CH-UA 品牌 ──
-    const brands = [
-      { brand: 'Not/A?Brand', version: '8' },
-      { brand: 'Chromium', version: chromeMajor },
-      { brand: 'Google Chrome', version: chromeMajor },
-    ]
-    const fullVersionList = [
-      { brand: 'Not/A?Brand', version: '99' },
-      { brand: 'Chromium', version: chromeVersion },
-      { brand: 'Google Chrome', version: chromeVersion },
-    ]
+    // ── UA-CH 品牌（随 Chrome 主版本变化的 GREASE 值）──
+    const { brands, fullVersionList } = this.#buildBrands(chromeVersion)
 
     return {
+      version: IDENTITY_VERSION,
       identity: {
         navigator: {
           // 基础属性
           userAgent: ua,
-          appVersion: appVersion,
           platform: osInfo.navigatorPlatform,
           vendor: 'Google Inc.',
           webdriver: false,
@@ -119,14 +115,16 @@ class BrowserEnv {
           productSub: '20030107',
           appCodeName: 'Mozilla',
           appName: 'Netscape',
-          // UA 客户端提示
+          // UA 客户端提示（纯数据字段可 JSON 序列化，供 preload 消费；方法为运行时 API）
           userAgentData: {
             brands,
+            fullVersionList,
             mobile: false,
             platform: osInfo.chromePlatformName,
             platformVersion: osInfo.platformVersion,
             architecture: osInfo.architecture,
             bitness: osInfo.bitness,
+            wow64: false,
             getBrands() {
               return Promise.resolve(brands)
             },
@@ -146,7 +144,7 @@ class BrowserEnv {
               return { brands, mobile: false, platform: osInfo.chromePlatformName }
             },
           },
-          // 插件列表（供 preload 构建 PluginArray 用）
+          // 插件列表（Chrome 126+ 规范硬编码的 5 个 PDF 插件，HTML spec §8.10.1.6）
           plugins: this.#generatePlugins(),
         },
       },
@@ -155,14 +153,46 @@ class BrowserEnv {
         'sec-ch-ua': brands.map(b => `"${b.brand}";v="${b.version}"`).join(', '),
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': osInfo.chromePlatformName,
-        'sec-ch-ua-platform-version': `"${osInfo.platformVersion}"` || '"0.0.0"',
+        // Windows/macOS 发送 platform-version；Linux 省略（真实 Chrome 默认状态即无此头，
+        // 且其高熵值为空串，见 user_agent_utils.cc GetPlatformVersion）
+        ...(osInfo.platformVersion
+          ? { 'sec-ch-ua-platform-version': `"${osInfo.platformVersion}"` }
+          : {}),
       },
     }
   }
 
+  // ── UA-CH 品牌：复刻 Chromium GREASE 算法（seed = 主版本号）──
+  #buildBrands(chromeVersion) {
+    const major = Number(chromeVersion.split('.')[0])
+    const grease = {
+      brand: `Not${GREASE_CHARS[major % 11]}A${GREASE_CHARS[(major + 1) % 11]}Brand`,
+      version: GREASE_VERSIONS[major % 3],
+    }
+    // fullVersionList 中 GREASE 版本补 .0.0.0（GetProcessedGreasedBrandVersion）
+    const greaseFull = { brand: grease.brand, version: `${grease.version}.0.0.0` }
+    const order = BRAND_ORDERS[major % 6]
+    const base = [
+      grease,
+      { brand: 'Chromium', version: String(major) },
+      { brand: 'Google Chrome', version: String(major) },
+    ]
+    const full = [
+      greaseFull,
+      { brand: 'Chromium', version: chromeVersion },
+      { brand: 'Google Chrome', version: chromeVersion },
+    ]
+    const brands = []
+    const fullVersionList = []
+    for (let i = 0; i < 3; i++) {
+      brands[order[i]] = base[i]
+      fullVersionList[order[i]] = full[i]
+    }
+    return { brands, fullVersionList }
+  }
+
   #pickChromeVersion() {
     // 基于 os.hostname() + os.platform() 的确定性哈希，确保同一台机器版本一致
-    // 但如果 identity.json 已存在则直接读取（在 #ensure 中处理）
     const seed = this.#hashCode(os.hostname() + os.platform() + os.arch())
     return CHROME_VERSIONS[seed % CHROME_VERSIONS.length]
   }
@@ -180,14 +210,10 @@ class BrowserEnv {
   #detectOS() {
     const platform = os.platform()
     const arch = os.arch()
-    const release = os.release()
 
     if (platform === 'win32') {
-      const [major, minor, build] = release.split('.').map(Number)
-      const isWin11 = build >= 22000
-      const archMap = { x64: 'x64', arm64: 'ARM64', ia32: 'WOW64' }
-      const archStr = archMap[arch] || 'x64'
-
+      // 现代 Chrome 统一上报 Windows NT 10.0; Win64; x64（Win10/Win11/arm64 相同）
+      const isWin11 = Number(os.release().split('.')[2] || 0) >= 22000
       return {
         platform: 'win32',
         arch,
@@ -196,87 +222,57 @@ class BrowserEnv {
         platformVersion: isWin11 ? '15.0.0' : '14.0.0',
         architecture: arch === 'arm64' ? 'arm' : 'x86',
         bitness: arch === 'ia32' ? '32' : '64',
-        platformString: isWin11
-          ? `Windows NT 10.0; Win64; ${archStr}`
-          : `Windows NT ${major}.${minor}; ${archStr}`,
+        platformString: 'Windows NT 10.0; Win64; x64',
       }
     }
 
     if (platform === 'darwin') {
-      const darwinVer = parseInt(release.split('.')[0], 10)
-      const macosMajor = Math.max(darwinVer - 4, 10)
-      // 构建 macOS 版本字符串 (如 14.1.0)
-      const parts = release.split('.')
-      let macosVer = `${macosMajor}`
-      if (parts.length > 1) {
-        // Darwin 第二段在某些版本对应 macOS 副版本
-        macosVer = `${macosMajor}.${parts[1]}`
-      }
-      const chipType = arch === 'arm64' ? 'Apple Silicon' : 'Intel'
-
+      // Chrome 在 macOS（含 Apple Silicon）统一上报 Intel Mac OS X 10_15_7
+      const darwinMajor = parseInt(os.release().split('.')[0], 10)
+      const macosMajor = darwinMajor >= 20 ? darwinMajor - 9 : 10
+      const macosMinor = darwinMajor >= 20 ? (parseInt(os.release().split('.')[1], 10) || 0) : 15
       return {
         platform: 'darwin',
         arch,
         navigatorPlatform: 'MacIntel',
         chromePlatformName: 'macOS',
-        platformVersion: macosVer,
+        platformVersion: `${macosMajor}.${macosMinor}.0`,
         architecture: arch === 'arm64' ? 'arm' : 'x86',
         bitness: '64',
-        platformString: `${chipType} Mac OS X ${macosVer.replace('.', '_')}`,
+        platformString: 'Macintosh; Intel Mac OS X 10_15_7',
       }
     }
 
-    // Linux
-    const archMap = {
-      x64: 'x86_64', arm: 'armv7l', arm64: 'aarch64',
-      ppc64: 'ppc64le', s390x: 's390x',
-    }
+    // Linux：统一上报 x86_64，无 platform-version（与真实 Chrome 一致）
     return {
       platform: 'linux',
       arch,
-      navigatorPlatform: `Linux ${archMap[arch] || 'x86_64'}`,
+      navigatorPlatform: 'Linux x86_64',
       chromePlatformName: 'Linux',
       platformVersion: '',
-      architecture: arch === 'arm64' ? 'arm' : 'x86',
+      architecture: arch === 'arm64' || arch === 'arm' ? 'arm' : 'x86',
       bitness: '64',
-      platformString: `X11; Linux ${archMap[arch] || 'x86_64'}`,
+      platformString: 'X11; Linux x86_64',
     }
   }
 
-  #buildPlatformString(osInfo) {
-    return osInfo.platformString
-  }
-
   #generatePlugins() {
-    // 真实 Chrome 默认插件列表
+    // Chrome 126+ 规范硬编码的 5 个 PDF 插件（HTML spec §8.10.1.6）
     return [
-      {
-        name: 'Chrome PDF Plugin',
-        filename: 'internal-pdf-viewer',
-        description: 'Portable Document Format',
-        mimeTypes: [
-          { type: 'application/x-google-chrome-pdf', suffixes: 'pdf', description: 'Portable Document Format' },
-          { type: 'application/pdf', suffixes: 'pdf', description: 'Portable Document Format' },
-        ],
-      },
-      {
-        name: 'Chrome PDF Viewer',
-        filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai',
-        description: '',
-        mimeTypes: [
-          { type: 'application/pdf', suffixes: 'pdf', description: 'Portable Document Format' },
-        ],
-      },
-      {
-        name: 'Native Client',
-        filename: 'internal-nacl-plugin',
-        description: '',
-        mimeTypes: [
-          { type: 'application/x-pnacl', suffixes: '', description: 'Portable Native Client Executable' },
-          { type: 'application/x-nacl', suffixes: '', description: 'Native Client Executable' },
-        ],
-      },
-    ]
+      'PDF Viewer',
+      'Chrome PDF Viewer',
+      'Chromium PDF Viewer',
+      'Microsoft Edge PDF Viewer',
+      'WebKit built-in PDF',
+    ].map(name => ({
+      name,
+      filename: 'internal-pdf-viewer',
+      description: 'Portable Document Format',
+      mimeTypes: [
+        { type: 'application/pdf', suffixes: 'pdf', description: 'Portable Document Format' },
+        { type: 'text/pdf', suffixes: 'pdf', description: 'Portable Document Format' },
+      ],
+    }))
   }
 }
 

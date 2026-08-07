@@ -7,6 +7,11 @@ import trayManager from'./trayManager.js'
 import shortcutManager from './shortcut/shortcutManager.js'
 import contextManager from "./context/contextManager.js"
 import AutoLaunch from "./utility/autoLaunch.js"
+import browserEnv from './disguise/browserEnv.js'
+
+// 引擎级 User-Agent：必须在 app ready 前设置，确保页面 navigator.userAgent 与伪装身份一致
+const globalUA = browserEnv.getHeaders()['user-agent'];
+if (globalUA) app.userAgentFallback = globalUA;
 
 // app.disableHardwareAcceleration();
 //app.commandLine.appendSwitch('disable-gpu');
@@ -25,14 +30,8 @@ app.isQuitting = false;
 app.isMac = (process.platform === 'darwin');
 app.singleLock = app.requestSingleInstanceLock();
 
-import browserEnv from './disguise/browserEnv.js'
-
 app.whenReady().then(async () => {
   if (!app.singleLock) return app.quit();
-
-  // 引擎级别设置 User-Agent（不影响 TLS 指纹，但让 navigator.userAgent 默认值正确）
-  const globalUA = browserEnv.getHeaders()['user-agent'];
-  if (globalUA) app.userAgentFallback = globalUA;
 
   // 先初始化数据库
   await initDatabase(path.join(app.getPath('userData'), 'tuboshu.db'))

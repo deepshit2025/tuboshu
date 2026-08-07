@@ -112,6 +112,8 @@ class ViewManager {
             await Utility.loadExtensions(view)
         }
 
+        // 显式设置引擎级 UA，确保页面 navigator.userAgent 与伪装身份一致（请求头另由 webRequest 改写）
+        view.webContents.setUserAgent(identity.navigator.userAgent)
         view.webContents.setZoomLevel(0)
         this.renderProcessGone(view);
         this.injectJsCode(view, name);

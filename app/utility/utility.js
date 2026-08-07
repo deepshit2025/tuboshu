@@ -68,16 +68,27 @@ class Utility {
         session.__headerPatched = true;
 
         session.webRequest.onBeforeSendHeaders((details, callback) => {
-            // 批量应用伪装 header，与 browserEnv 中的身份完全一致
-            Object.assign(details.requestHeaders, {
-                'user-agent': headers['user-agent'],
-                'sec-ch-ua': headers['sec-ch-ua'],
-                'sec-ch-ua-mobile': headers['sec-ch-ua-mobile'],
-                'sec-ch-ua-platform': headers['sec-ch-ua-platform'],
-                'sec-ch-ua-platform-version': headers['sec-ch-ua-platform-version'],
-            });
-
-            callback({ requestHeaders: details.requestHeaders });
+            // 先移除引擎自动生成的 UA-CH（Electron 默认值可能与伪装身份不一致）
+            const h = details.requestHeaders;
+            delete h['sec-ch-ua'];
+            delete h['sec-ch-ua-mobile'];
+            delete h['sec-ch-ua-platform'];
+            delete h['sec-ch-ua-platform-version'];
+            delete h['sec-ch-ua-full-version-list'];
+            // 高熵 UA-CH 仅在站点 Accept-CH 协商后出现，一并移除引擎默认值，避免暴露真实平台信息
+            delete h['sec-ch-ua-arch'];
+            delete h['sec-ch-ua-bitness'];
+            delete h['sec-ch-ua-model'];
+            delete h['sec-ch-ua-wow64'];
+            // 写入伪装身份，与 browserEnv 完全一致（Linux 无 platform-version，与真实 Chrome 一致）
+            h['user-agent'] = headers['user-agent'];
+            h['sec-ch-ua'] = headers['sec-ch-ua'];
+            h['sec-ch-ua-mobile'] = headers['sec-ch-ua-mobile'];
+            h['sec-ch-ua-platform'] = headers['sec-ch-ua-platform'];
+            if (headers['sec-ch-ua-platform-version']) {
+                h['sec-ch-ua-platform-version'] = headers['sec-ch-ua-platform-version'];
+            }
+            callback({ requestHeaders: h });
         });
     }
 
