@@ -38,6 +38,11 @@ app.whenReady().then(async () => {
   await initDatabase(path.join(app.getPath('userData'), 'tuboshu.db'))
   await tbsDbManager.init()
 
+  // 先执行上次未完成的磁盘清理：此时尚未创建任何站点视图，缓存文件不会被占用
+  await dataSync.processPendingCleanup().catch(error => {
+    console.error('[clearCache] 启动缓存清理失败:', error);
+  });
+
   windowManager.createWindow();
   trayManager.createTray();
   shortcutManager.initShortcuts();
@@ -46,7 +51,7 @@ app.whenReady().then(async () => {
 
   // 异步清理已删除站点遗留的分区目录，不阻塞启动
   dataSync.purgeOrphanPartitions().catch(error => {
-    console.error('[clearCache] 启动时清理遗留分区失败:', error);
+    console.error('[clearCache] 启动遗留分区清理失败:', error);
   });
 })
 

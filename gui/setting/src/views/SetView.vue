@@ -1,6 +1,8 @@
 <script setup>
 import iconCancel from "@/components/icons/cancel.vue";
+import { useDialog } from "naive-ui";
 const message = useMessage();
+const dialog = useDialog();
 const settings = ref({})
 
 const isShow = ref(false);
@@ -154,14 +156,39 @@ const handleWinChange = (e) => {
   message.success(`设置已更新,请重新启动`)
 }
 
-const handleBtnClick = async ()=> {
+const handleBtnClick = () => {
+  dialog.warning({
+    title: '清除缓存',
+    content: '将清理所有站点的 HTTP 缓存、代码缓存、LocalStorage、IndexedDB 与 Service Worker 数据。登录 Cookie 会保留，但部分站点仍可能需要重新登录。是否继续？',
+    positiveText: '清除',
+    negativeText: '取消',
+    onPositiveClick: () => {
+      doClearCache();
+    }
+  });
+}
+
+const doClearCache = async () => {
   btnLoading.value = true;
   btnText.value = '正在清除缓存';
   try {
-    await window.myApi.clearCache()
-    message.success('Tuboshu缓存已清除')
+    const result = await window.myApi.clearCache();
+    const sessions = result?.sessions ?? 0;
+    const closed = result?.viewsClosed ?? 0;
+    const removed = result?.orphansRemoved ?? 0;
+    const dirsRemoved = result?.dirsRemoved ?? 0;
+    const pending = result?.pending ?? 0;
+
+    let text = `缓存已清除（${sessions} 个会话，${dirsRemoved} 个缓存目录）`;
+    if (removed > 0) text += `，清理遗留站点目录 ${removed} 个`;
+    if (closed > 0) text += `，关闭站点页面 ${closed} 个`;
+    if (pending > 0) text += `，${pending} 个站点将在下次启动时彻底清理`;
+    message.success(text);
+
+    // 清理完成后重新加载设置页，确保页面状态与清理结果一致
+    setTimeout(() => window.location.reload(), 1500);
   } catch (e) {
-    message.error('清除缓存失败: ' + e)
+    message.error('清除缓存失败: ' + e);
   } finally {
     btnLoading.value = false;
     btnText.value = '清除缓存';

@@ -5,18 +5,7 @@ import tbsDbManager from '../store/tbsDbManager.js'
 import viewManager from '../viewManager.js'
 import CONS from '../constants.js'
 
-// Chromium BrowsingDataRemover 支持的数据类型（不含 cookies，保留登录态）
-const CACHE_DATA_TYPES = [
-    'backgroundFetch',
-    'cache',
-    'fileSystems',
-    'indexedDB',
-    'localStorage',
-    'serviceWorkers',
-    'webSQL'
-]
-
-// clearStorageData 兜底清理的存储类型（注意 localstorage 为全小写）
+// clearStorageData 支持的存储类型（注意 localstorage 为全小写）
 const STORAGE_TYPES = [
     'appcache',
     'filesystem',
@@ -27,6 +16,33 @@ const STORAGE_TYPES = [
     'serviceworkers',
     'cachestorage'
 ]
+
+// 可安全删除的分区缓存子目录（保留 Network/Cookies、Preferences 等登录相关数据）
+const CACHE_SUBDIRS = [
+    'Cache',
+    'Code Cache',
+    'GPUCache',
+    'DawnGraphiteCache',
+    'DawnWebGPUCache',
+    'Service Worker',
+    'IndexedDB',
+    'Local Storage',
+    'Session Storage',
+    'WebStorage',
+    'Shared Dictionary',
+    'blob_storage',
+    'File System',
+    'WebSQL'
+]
+
+// 正在使用的内置页面分区，只做 API 清理，不删除磁盘目录
+const BUILTIN_PARTITIONS = new Set([
+    ...CONS.SETTING.map(item => item.name),
+    CONS.APP.CLOSE_SITE_NAME
+])
+
+// 单个清理任务的最长等待时间，避免损坏的分区（如 quota 数据库异常）拖死整个清理
+const CLEAR_TASK_TIMEOUT = 8000
 
 class DataSync{
     constructor() {}
@@ -56,22 +72,34 @@ class DataSync{
 
     async clearSession(targetSession, label){
         const tasks = [
-            ['clearData', () => targetSession.clearData({dataTypes: CACHE_DATA_TYPES})],
+            ['clearStorageData', () => targetSession.clearStorageData({storages: STORAGE_TYPES})],
             ['clearCache', () => targetSession.clearCache()],
             ['clearCodeCaches', () => targetSession.clearCodeCaches({})],
-            ['clearStorageData', () => targetSession.clearStorageData({storages: STORAGE_TYPES})],
             ['clearAuthCache', () => targetSession.clearAuthCache()],
             ['clearHostResolverCache', () => targetSession.clearHostResolverCache()],
             ['clearSharedDictionaryCache', () => targetSession.clearSharedDictionaryCache()]
         ];
 
-        for (const [taskName, task] of tasks) {
+        // 并行执行，且每个任务都有超时保护：个别分区存储损坏时不会拖死整个清理
+        const results = await Promise.all(tasks.map(async ([taskName, task]) => {
+            let timer;
             try {
-                await task();
+                await Promise.race([
+                    task(),
+                    new Promise((_, reject) => {
+                        timer = setTimeout(() => reject(new Error(`超时 ${CLEAR_TASK_TIMEOUT}ms`)), CLEAR_TASK_TIMEOUT);
+                    })
+                ]);
+                return null;
             } catch (error) {
-                console.error(`[clearCache] ${label}.${taskName} 清理失败:`, error);
+                console.error(`[clearCache] ${label}.${taskName} 清理失败:`, error.message || error);
+                return taskName;
+            } finally {
+                clearTimeout(timer);
             }
-        }
+        }));
+
+        return results.filter(Boolean);
     }
 
     async getAllSiteCookies(){
@@ -190,6 +218,88 @@ class DataSync{
         }
     }
 
+    // 磁盘级清理单个分区的缓存子目录（保留 Cookies/Network 等登录数据）
+    async purgePartitionCacheDirs(name){
+        const partitionDir = path.join(this.getPartitionsDir(), name);
+        let removed = 0;
+        const failed = [];
+
+        for (const sub of CACHE_SUBDIRS) {
+            const target = path.join(partitionDir, sub);
+
+            try {
+                const stat = await fs.stat(target);
+                if (!stat.isDirectory()) continue;
+            } catch (error) {
+                if (error.code === 'ENOENT') continue;
+                failed.push(sub);
+                continue;
+            }
+
+            try {
+                // 不重试：运行时被 session 锁住的目录快速失败，留给下次启动清理
+                await fs.rm(target, {recursive: true, force: true, maxRetries: 0});
+                removed++;
+            } catch (error) {
+                failed.push(sub);
+                console.error(`[clearCache] 删除分区 ${name}/${sub} 失败:`, error.message || error);
+            }
+        }
+
+        return {removed, failed};
+    }
+
+    getPendingCleanupFile(){
+        return path.join(app.getPath('userData'), 'cache-cleanup-pending.json');
+    }
+
+    async savePendingCleanup(names){
+        const file = this.getPendingCleanupFile();
+
+        try {
+            if (!names || names.length === 0) {
+                await fs.rm(file, {force: true});
+                return;
+            }
+            await fs.writeFile(file, JSON.stringify({
+                partitions: [...new Set(names)],
+                updatedAt: Date.now()
+            }), 'utf8');
+        } catch (error) {
+            console.error('[clearCache] 写入待清理标记失败:', error.message || error);
+        }
+    }
+
+    // 应用启动时执行上次未完成的磁盘清理（此时没有站点视图占用文件）
+    async processPendingCleanup(){
+        const file = this.getPendingCleanupFile();
+        let data;
+
+        try {
+            data = JSON.parse(await fs.readFile(file, 'utf8'));
+        } catch (error) {
+            return {processed: 0, pending: 0};
+        }
+
+        const partitions = Array.isArray(data?.partitions) ? data.partitions : [];
+        const stillPending = [];
+        let processed = 0;
+
+        for (const name of partitions) {
+            const {failed} = await this.purgePartitionCacheDirs(name);
+            if (failed.length > 0) stillPending.push(name);
+            else processed++;
+        }
+
+        await this.savePendingCleanup(stillPending);
+
+        if (processed > 0 || stillPending.length > 0) {
+            console.log(`[clearCache] 启动清理：完成 ${processed} 个，待重试 ${stillPending.length} 个`);
+        }
+
+        return {processed, pending: stillPending.length};
+    }
+
     async clearStorageExcludingCookies() {
         const activeView = viewManager.getActiveView();
 
@@ -197,20 +307,43 @@ class DataSync{
         const viewsClosed = viewManager.closeInactiveViews(activeView?.name);
 
         const {sessions, labels} = this.getTargetSessions();
-        await Promise.all(sessions.map((targetSession, index) => this.clearSession(targetSession, labels[index])));
+        const apiFailed = [];
+        await Promise.all(sessions.map(async (targetSession, index) => {
+            const failedTasks = await this.clearSession(targetSession, labels[index]);
+            if (failedTasks.length > 0) apiFailed.push(labels[index]);
+        }));
 
-        // 当前页面（通常是设置页）在清理完成后重新加载
-        const webContents = activeView?.object?.webContents;
-        if (webContents && !webContents.isDestroyed()) {
-            webContents.reload();
+        // 磁盘级兜底：API 清理不到或存储损坏导致超时的分区，直接删除缓存目录
+        const pending = [];
+        let dirsRemoved = 0;
+        let dirsFailed = 0;
+
+        const partitionNames = this.getTargetPartitionNames()
+            .filter(name => !BUILTIN_PARTITIONS.has(name));
+        const dirResults = await Promise.all(partitionNames.map(async name => {
+            const result = await this.purgePartitionCacheDirs(name);
+            return {name, ...result};
+        }));
+
+        for (const result of dirResults) {
+            dirsRemoved += result.removed;
+            dirsFailed += result.failed.length;
+            if (result.failed.length > 0) pending.push(result.name);
         }
 
-        // 同时清理已删除站点遗留的分区目录
+        // 仍有文件被占用时记录标记，下次启动时继续清理
+        await this.savePendingCleanup(pending);
+
+        // 同时清理已删除站点遗留的整个分区目录
         const orphans = await this.purgeOrphanPartitions();
 
         return {
             sessions: sessions.length,
             viewsClosed,
+            apiFailed: apiFailed.length,
+            dirsRemoved,
+            dirsFailed,
+            pending: pending.length,
             orphansRemoved: orphans.removed,
             orphansFailed: orphans.failed
         };

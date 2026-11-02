@@ -62,6 +62,7 @@ const themeOverrides = {
 </script>
 
 <template>
+  <n-dialog-provider>
   <n-message-provider>
   <div id="left">
     <n-config-provider :theme="theme" :theme-overrides="themeOverrides">
@@ -75,6 +76,7 @@ const themeOverrides = {
     </n-config-provider>
   </div>
   </n-message-provider>
+  </n-dialog-provider>
 
 </template>
 
