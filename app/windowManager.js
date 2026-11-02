@@ -232,7 +232,12 @@ class WindowManager{
         //删除左边导航栏
         ipcMain.on('remove:menu', async (event, menu) => {
 
+            // 先关闭该站点视图，避免分区目录被占用
+            viewManager.closeView(menu.name);
             tbsDbManager.removeSite(menu);
+            dataSync.purgePartitionDir(menu.name).catch(error => {
+                console.error('[clearCache] 删除站点分区目录失败:', error);
+            });
             this.menuView.webContents.reload();
             this.closeHideSites();
         });

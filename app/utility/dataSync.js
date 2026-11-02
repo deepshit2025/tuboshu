@@ -172,6 +172,24 @@ class DataSync{
         return {removed, failed};
     }
 
+    // 删除指定站点的分区目录（删除站点时调用，调用前应先关闭对应视图）
+    async purgePartitionDir(name){
+        if (!name) return false;
+
+        try {
+            await fs.rm(path.join(this.getPartitionsDir(), name), {
+                recursive: true,
+                force: true,
+                maxRetries: 3,
+                retryDelay: 200
+            });
+            return true;
+        } catch (error) {
+            console.error(`[clearCache] 删除站点分区目录 ${name} 失败:`, error);
+            return false;
+        }
+    }
+
     async clearStorageExcludingCookies() {
         const activeView = viewManager.getActiveView();
 
