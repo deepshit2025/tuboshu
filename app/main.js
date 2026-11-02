@@ -8,6 +8,7 @@ import shortcutManager from './shortcut/shortcutManager.js'
 import contextManager from "./context/contextManager.js"
 import AutoLaunch from "./utility/autoLaunch.js"
 import browserEnv from './disguise/browserEnv.js'
+import dataSync from './utility/dataSync.js'
 
 // 引擎级 User-Agent：必须在 app ready 前设置，确保页面 navigator.userAgent 与伪装身份一致
 const globalUA = browserEnv.getHeaders()['user-agent'];
@@ -42,6 +43,11 @@ app.whenReady().then(async () => {
   shortcutManager.initShortcuts();
   contextManager.createContextMenu();
   AutoLaunch.initAutoLaunch();
+
+  // 异步清理已删除站点遗留的分区目录，不阻塞启动
+  dataSync.purgeOrphanPartitions().catch(error => {
+    console.error('[clearCache] 启动时清理遗留分区失败:', error);
+  });
 })
 
 

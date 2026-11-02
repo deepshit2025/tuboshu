@@ -1,4 +1,6 @@
-import {ipcMain, session} from 'electron'
+import {ipcMain, session, app} from 'electron'
+import path from 'path'
+import fs from 'fs/promises'
 import tbsDbManager from '../store/tbsDbManager.js'
 import viewManager from '../viewManager.js'
 import CONS from '../constants.js'
@@ -124,6 +126,52 @@ class DataSync{
         }
     }
 
+    getPartitionsDir(){
+        return path.join(app.getPath('userData'), 'Partitions');
+    }
+
+    // 删除数据库中已不存在的站点遗留的分区目录（应用删除站点后残留的缓存/登录数据）
+    async purgeOrphanPartitions(){
+        const partitionsDir = this.getPartitionsDir();
+        let entries;
+
+        try {
+            entries = await fs.readdir(partitionsDir, {withFileTypes: true});
+        } catch (error) {
+            if (error.code !== 'ENOENT') {
+                console.error('[clearCache] 读取 Partitions 目录失败:', error);
+            }
+            return {removed: 0, failed: 0};
+        }
+
+        const keep = new Set(this.getTargetPartitionNames());
+        let removed = 0;
+        let failed = 0;
+
+        for (const entry of entries) {
+            if (!entry.isDirectory() || keep.has(entry.name)) continue;
+
+            try {
+                await fs.rm(path.join(partitionsDir, entry.name), {
+                    recursive: true,
+                    force: true,
+                    maxRetries: 3,
+                    retryDelay: 200
+                });
+                removed++;
+            } catch (error) {
+                failed++;
+                console.error(`[clearCache] 删除遗留分区目录 ${entry.name} 失败:`, error);
+            }
+        }
+
+        if (removed > 0 || failed > 0) {
+            console.log(`[clearCache] 遗留分区目录清理完成：删除 ${removed} 个，失败 ${failed} 个`);
+        }
+
+        return {removed, failed};
+    }
+
     async clearStorageExcludingCookies() {
         const activeView = viewManager.getActiveView();
 
@@ -139,7 +187,15 @@ class DataSync{
             webContents.reload();
         }
 
-        return {sessions: sessions.length, viewsClosed};
+        // 同时清理已删除站点遗留的分区目录
+        const orphans = await this.purgeOrphanPartitions();
+
+        return {
+            sessions: sessions.length,
+            viewsClosed,
+            orphansRemoved: orphans.removed,
+            orphansFailed: orphans.failed
+        };
     }
 
     bindIpcMain() {
@@ -152,8 +208,7 @@ class DataSync{
 
         //清理缓存
         ipcMain.handle('dataSync:clear:cache', async () => {
-            await this.clearStorageExcludingCookies();
-            return true;
+            return await this.clearStorageExcludingCookies();
         });
 
         //写入本地数据
