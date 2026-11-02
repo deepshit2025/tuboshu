@@ -47,6 +47,25 @@ class ViewManager {
         view.object = null;
     }
 
+    // 关闭除指定视图外的所有站点视图，返回被关闭的数量
+    closeInactiveViews(keepName) {
+        const keep = keepName ? keepName.toLowerCase() : null;
+        const remaining = [];
+        let closed = 0;
+
+        for (const view of this.views) {
+            if (keep && view.name === keep) {
+                remaining.push(view);
+                continue;
+            }
+            this.clearView(view);
+            closed++;
+        }
+
+        this.views = remaining;
+        return closed;
+    }
+
 
     refreshActiveView(){
         const activeView = this.getActiveView();

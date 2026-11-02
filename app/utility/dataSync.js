@@ -1,11 +1,75 @@
 import {ipcMain, session} from 'electron'
 import tbsDbManager from '../store/tbsDbManager.js'
+import viewManager from '../viewManager.js'
+import CONS from '../constants.js'
+
+// Chromium BrowsingDataRemover 支持的数据类型（不含 cookies，保留登录态）
+const CACHE_DATA_TYPES = [
+    'backgroundFetch',
+    'cache',
+    'fileSystems',
+    'indexedDB',
+    'localStorage',
+    'serviceWorkers',
+    'webSQL'
+]
+
+// clearStorageData 兜底清理的存储类型（注意 localstorage 为全小写）
+const STORAGE_TYPES = [
+    'appcache',
+    'filesystem',
+    'indexdb',
+    'localstorage',
+    'shadercache',
+    'websql',
+    'serviceworkers',
+    'cachestorage'
+]
 
 class DataSync{
     constructor() {}
 
     getPartitionName(name){
         return 'persist:' + name;
+    }
+
+    // 需要清理的所有分区：数据库中的站点 + 内置页面（设置页、关闭提示页）
+    getTargetPartitionNames(){
+        const sites = tbsDbManager.getSites();
+        const siteNames = sites.length > 0
+            ? sites.map(site => site.name)
+            : CONS.SITES.map(site => site.name);
+        const builtinNames = CONS.SETTING.map(item => item.name);
+        builtinNames.push(CONS.APP.CLOSE_SITE_NAME);
+        return [...new Set([...siteNames, ...builtinNames])];
+    }
+
+    getTargetSessions(){
+        const names = this.getTargetPartitionNames();
+        const sessions = names.map(name => session.fromPartition(this.getPartitionName(name)));
+        // 菜单页等使用默认 session，同样需要清理
+        sessions.push(session.defaultSession);
+        return {sessions, labels: [...names, 'default']};
+    }
+
+    async clearSession(targetSession, label){
+        const tasks = [
+            ['clearData', () => targetSession.clearData({dataTypes: CACHE_DATA_TYPES})],
+            ['clearCache', () => targetSession.clearCache()],
+            ['clearCodeCaches', () => targetSession.clearCodeCaches({})],
+            ['clearStorageData', () => targetSession.clearStorageData({storages: STORAGE_TYPES})],
+            ['clearAuthCache', () => targetSession.clearAuthCache()],
+            ['clearHostResolverCache', () => targetSession.clearHostResolverCache()],
+            ['clearSharedDictionaryCache', () => targetSession.clearSharedDictionaryCache()]
+        ];
+
+        for (const [taskName, task] of tasks) {
+            try {
+                await task();
+            } catch (error) {
+                console.error(`[clearCache] ${label}.${taskName} 清理失败:`, error);
+            }
+        }
     }
 
     async getAllSiteCookies(){
@@ -61,18 +125,21 @@ class DataSync{
     }
 
     async clearStorageExcludingCookies() {
-        const sites = tbsDbManager.getSites();
-        const typesToClear = ['appcache', 'filesystem', 'indexdb', 'shadercache', 'websql', 'serviceworkers', 'cachestorage'];
+        const activeView = viewManager.getActiveView();
 
-        await Promise.all(sites.map(async (site) => {
-            try {
-                const partitionSession = session.fromPartition(this.getPartitionName(site.name));
-                await partitionSession.clearCache()
-                await partitionSession.clearStorageData({ storages: typesToClear });
-            } catch (error) {
-                console.error(`清除站点 ${site.name} 的数据失败:`, error);
-            }
-        }));
+        // 先关闭非活动视图，避免页面内存中的缓存/存储在清理后重新写回磁盘
+        const viewsClosed = viewManager.closeInactiveViews(activeView?.name);
+
+        const {sessions, labels} = this.getTargetSessions();
+        await Promise.all(sessions.map((targetSession, index) => this.clearSession(targetSession, labels[index])));
+
+        // 当前页面（通常是设置页）在清理完成后重新加载
+        const webContents = activeView?.object?.webContents;
+        if (webContents && !webContents.isDestroyed()) {
+            webContents.reload();
+        }
+
+        return {sessions: sessions.length, viewsClosed};
     }
 
     bindIpcMain() {
