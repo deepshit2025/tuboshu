@@ -159,7 +159,7 @@ const handleWinChange = (e) => {
 const handleBtnClick = () => {
   dialog.warning({
     title: '清除缓存',
-    content: '将清理所有站点的 HTTP 缓存、代码缓存、LocalStorage、IndexedDB 与 Service Worker 数据。登录 Cookie 会保留，但部分站点仍可能需要重新登录。是否继续？',
+    content: '将清理所有站点的 HTTP 缓存、代码缓存与 Service Worker 缓存。登录 Cookie、LocalStorage 与 IndexedDB 数据会保留，不会影响站点登录状态。是否继续？',
     positiveText: '清除',
     negativeText: '取消',
     onPositiveClick: () => {

@@ -6,18 +6,17 @@ import viewManager from '../viewManager.js'
 import CONS from '../constants.js'
 
 // clearStorageData 支持的存储类型（注意 localstorage 为全小写）
+// 刻意不包含 localstorage / indexdb：站点常把登录 token 存在这里，且数据量占比很低
 const STORAGE_TYPES = [
     'appcache',
     'filesystem',
-    'indexdb',
-    'localstorage',
     'shadercache',
     'websql',
     'serviceworkers',
     'cachestorage'
 ]
 
-// 可安全删除的分区缓存子目录（保留 Network/Cookies、Preferences 等登录相关数据）
+// 可安全删除的分区缓存子目录（保留 Network/Cookies、Local Storage、IndexedDB 等登录相关数据）
 const CACHE_SUBDIRS = [
     'Cache',
     'Code Cache',
@@ -25,8 +24,6 @@ const CACHE_SUBDIRS = [
     'DawnGraphiteCache',
     'DawnWebGPUCache',
     'Service Worker',
-    'IndexedDB',
-    'Local Storage',
     'Session Storage',
     'WebStorage',
     'Shared Dictionary',
