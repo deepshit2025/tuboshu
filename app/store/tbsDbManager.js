@@ -45,19 +45,6 @@ const SCHEMA_SQL = `
     name  TEXT PRIMARY KEY,
     value TEXT NOT NULL DEFAULT ''
   );
-  CREATE TABLE IF NOT EXISTS clipboard_history (
-    id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    content   TEXT NOT NULL,
-    timestamp INTEGER NOT NULL,
-    source    TEXT NOT NULL DEFAULT ''
-  );
-  CREATE INDEX IF NOT EXISTS idx_clipboard_ts ON clipboard_history(timestamp DESC);
-  CREATE TABLE IF NOT EXISTS clipboard_images (
-    id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    file_path TEXT NOT NULL,
-    timestamp INTEGER NOT NULL,
-    source    TEXT NOT NULL DEFAULT ''
-  );
   CREATE TABLE IF NOT EXISTS plugin (
     id          TEXT PRIMARY KEY,
     name        TEXT NOT NULL DEFAULT '',
@@ -110,17 +97,17 @@ class TbsDbManager {
     // 1. 建表
     db.run(SCHEMA_SQL)
 
-    // 2. 迁移：添加置顶/收藏字段（若表已存在但缺列）
-    this._migrateClipboardColumns(db)
+    // 2. 清理已移除的剪贴板功能遗留数据
+    this._cleanupLegacyClipboard(db)
 
-    // 2. 迁移旧 JSON 数据
+    // 3. 迁移旧 JSON 数据
     const oldDbPath = path.join(app.getPath('userData'), 'userdata.db')
     migrateFromLegacyDb(db, oldDbPath)
 
-    // 3. 填充初始数据（空库时）
+    // 4. 填充初始数据（空库时）
     this._seedIfEmpty(db)
 
-    // 4. 初始化内置插件
+    // 5. 初始化内置插件
     this._seedPluginsIfEmpty(db)
 
     this._initialized = true
@@ -181,18 +168,21 @@ class TbsDbManager {
     persistSync()
   }
 
-  _migrateClipboardColumns(db) {
-    // 检查 pinned 列是否存在
-    const cols = queryAll(db, 'PRAGMA table_info(clipboard_history)')
-    const colNames = cols.map(c => c.name)
-    if (!colNames.includes('pinned')) {
-      db.run('ALTER TABLE clipboard_history ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0')
-    }
-    if (!colNames.includes('pin_time')) {
-      db.run('ALTER TABLE clipboard_history ADD COLUMN pin_time INTEGER NOT NULL DEFAULT 0')
-    }
-    if (!colNames.includes('favorite')) {
-      db.run('ALTER TABLE clipboard_history ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0')
+  _cleanupLegacyClipboard(db) {
+    // 剪贴板历史功能已移除：清除旧表、配置与磁盘文件
+    db.run('DROP TABLE IF EXISTS clipboard_history')
+    db.run('DROP TABLE IF EXISTS clipboard_images')
+    db.run('DROP TABLE IF EXISTS clipboard_files')
+    db.run("DELETE FROM setting WHERE name IN ('clipboardWatchEnabled', 'clipboardMaxHistory')")
+    persistSync()
+
+    const clipboardDir = path.join(app.getPath('userData'), 'clipboard')
+    try {
+      if (fs.existsSync(clipboardDir)) {
+        fs.rmSync(clipboardDir, { recursive: true, force: true })
+      }
+    } catch (error) {
+      console.error('[cleanup] 删除剪贴板遗留目录失败:', error)
     }
   }
 
@@ -431,172 +421,6 @@ class TbsDbManager {
 
   removeGroup(group) {
     getDb().run('DELETE FROM groups_t WHERE name = ?', [group.name])
-    persistSync()
-  }
-
-  // ---------- clipboard history ----------
-
-  addClipboardRecord(content, source = '') {
-    const trimmed = content.trim()
-    const db = getDb()
-    exec(db,
-      `INSERT INTO clipboard_history (content, timestamp, source)
-       VALUES (?, ?, ?)`,
-      [trimmed, Date.now(), source]
-    )
-    // 超过上限时删除最旧的
-    const row = queryOne(db, 'SELECT value FROM setting WHERE name = ?', ['clipboardMaxHistory'])
-    const max = row ? (JSON.parse(row.value) || 500) : 500
-    const count = queryOne(db, 'SELECT COUNT(*) AS c FROM clipboard_history')
-    if ((count?.c || 0) > max) {
-      const excess = (count.c || 0) - max
-      db.run(`DELETE FROM clipboard_history WHERE id IN (
-        SELECT id FROM clipboard_history ORDER BY timestamp ASC LIMIT ?
-      )`, [excess])
-    }
-    persistSync()
-  }
-
-  getClipboardHistory(keyword = '', limit = 200, favoritesOnly = false) {
-    const db = getDb()
-    const conditions = []
-    const params = []
-
-    if (keyword) {
-      conditions.push('content LIKE ?')
-      params.push(`%${keyword}%`)
-    }
-    if (favoritesOnly) {
-      conditions.push('favorite = 1')
-    }
-
-    const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : ''
-
-    return queryAll(db,
-      `SELECT * FROM clipboard_history ${where} ORDER BY pinned DESC, pin_time DESC, timestamp DESC LIMIT ?`,
-      [...params, limit]
-    )
-  }
-
-  togglePin(id) {
-    const db = getDb()
-    const row = queryOne(db, 'SELECT pinned FROM clipboard_history WHERE id = ?', [id])
-    if (!row) return
-    const newPinned = row.pinned ? 0 : 1
-    db.run(
-      'UPDATE clipboard_history SET pinned = ?, pin_time = ? WHERE id = ?',
-      [newPinned, newPinned ? Date.now() : 0, id]
-    )
-    persistSync()
-  }
-
-  toggleFavorite(id) {
-    const db = getDb()
-    db.run('UPDATE clipboard_history SET favorite = CASE WHEN favorite THEN 0 ELSE 1 END WHERE id = ?', [id])
-    persistSync()
-  }
-
-  clearClipboardHistory() {
-    getDb().run('DELETE FROM clipboard_history')
-    persistSync()
-  }
-
-  clearClipboardPinned() {
-    getDb().run('DELETE FROM clipboard_history WHERE pinned = 1')
-    persistSync()
-  }
-
-  clearClipboardFavorites() {
-    getDb().run('DELETE FROM clipboard_history WHERE favorite = 1')
-    persistSync()
-  }
-
-  clearClipboardNormal() {
-    getDb().run('DELETE FROM clipboard_history WHERE pinned = 0 AND favorite = 0')
-    persistSync()
-  }
-
-  removeClipboardRecord(id) {
-    getDb().run('DELETE FROM clipboard_history WHERE id = ?', [id])
-    persistSync()
-  }
-
-  getLastClipboardContent() {
-    const row = queryOne(getDb(),
-      'SELECT content FROM clipboard_history ORDER BY timestamp DESC LIMIT 1'
-    )
-    return (row?.content || '').trim()
-  }
-
-  findClipboardByContent(content) {
-    const trimmed = content.trim()
-    return queryOne(getDb(),
-      'SELECT id FROM clipboard_history WHERE content = ? LIMIT 1',
-      [trimmed]
-    )
-  }
-
-  updateClipboardTimestamp(id) {
-    const db = getDb()
-    db.run('UPDATE clipboard_history SET timestamp = ? WHERE id = ?', [Date.now(), id])
-    persistSync()
-  }
-
-  // ---------- clipboard images ----------
-
-  addClipboardImage(filePath) {
-    const db = getDb()
-    exec(db,
-      `INSERT INTO clipboard_images (file_path, timestamp, source)
-       VALUES (?, ?, ?)`,
-      [filePath, Date.now(), '']
-    )
-    persistSync()
-  }
-
-  getClipboardImages(limit = 200) {
-    return queryAll(getDb(),
-      'SELECT * FROM clipboard_images ORDER BY timestamp DESC LIMIT ?',
-      [limit]
-    )
-  }
-
-  removeClipboardImage(id) {
-    getDb().run('DELETE FROM clipboard_images WHERE id = ?', [id])
-    persistSync()
-  }
-
-  clearClipboardImages() {
-    getDb().run('DELETE FROM clipboard_images')
-    persistSync()
-  }
-
-  // ---------- clipboard files ----------
-
-  addClipboardFile(filePath, originName) {
-    const db = getDb()
-    exec(db,
-      `INSERT INTO clipboard_files (file_path, origin_name, timestamp, source)
-       VALUES (?, ?, ?, ?)`,
-      [filePath, originName, Date.now(), '']
-    )
-    persistSync()
-  }
-
-  getClipboardFiles(limit = 200) {
-    return queryAll(getDb(),
-      'SELECT * FROM clipboard_files ORDER BY timestamp DESC LIMIT ?',
-      [limit]
-    )
-  }
-
-  removeClipboardFile(id) {
-    getDb().run('DELETE FROM clipboard_files WHERE id = ?', [id])
-    persistSync()
-  }
-
-  clearClipboardFiles() {
-    getDb().run('DELETE FROM clipboard_files')
     persistSync()
   }
 

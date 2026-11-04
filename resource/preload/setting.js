@@ -25,37 +25,6 @@ contextBridge.exposeInMainWorld('myApi', {
     getAppConfig: () => ipcRenderer.invoke('dataSync:get:data'),
     restoreAppConfig: (data) => ipcRenderer.send('dataSync:get:data', data),
 
-    // 文本
-    getClipboardHistory: (keyword, favoritesOnly) => ipcRenderer.invoke('clipboard:history', keyword, favoritesOnly),
-    clearClipboardHistory: () => ipcRenderer.invoke('clipboard:clear'),
-    clearClipboardPinned: () => ipcRenderer.invoke('clipboard:clear:pinned'),
-    clearClipboardFavorites: () => ipcRenderer.invoke('clipboard:clear:favorites'),
-    clearClipboardNormal: () => ipcRenderer.invoke('clipboard:clear:normal'),
-    deleteClipboardRecord: (id) => ipcRenderer.invoke('clipboard:delete', id),
-
-    // 置顶 / 收藏
-    togglePin: (id) => ipcRenderer.invoke('clipboard:pin:toggle', id),
-    toggleFavorite: (id) => ipcRenderer.invoke('clipboard:favorite:toggle', id),
-
-    // 图片
-    getClipboardImages: () => ipcRenderer.invoke('clipboard:images'),
-    deleteClipboardImage: (id) => ipcRenderer.invoke('clipboard:image:delete', id),
-    clearClipboardImages: () => ipcRenderer.invoke('clipboard:images:clear'),
-
-    // 文件
-    getClipboardFiles: () => ipcRenderer.invoke('clipboard:files'),
-    deleteClipboardFile: (id) => ipcRenderer.invoke('clipboard:file:delete', id),
-    clearClipboardFiles: () => ipcRenderer.invoke('clipboard:files:clear'),
-
-    toggleClipboardWatch: (enabled) => ipcRenderer.invoke('clipboard:toggle', enabled),
-
-    // 复制图片到系统剪贴板
-    copyClipboardImage: (filePath) => ipcRenderer.invoke('clipboard:image:copy', filePath),
-    // 新增：用系统默认程序打开文件
-    openClipboardFile: (filePath) => ipcRenderer.invoke('clipboard:file:open', filePath),
-    // 新增：在默认浏览器中打开链接
-    openLinkInBrowser: (url) => ipcRenderer.invoke('clipboard:url:open', url),
-
     // 插件市场
     getPlugins: () => ipcRenderer.invoke('get:plugins'),
     togglePlugin: (id, enabled) => ipcRenderer.invoke('toggle:plugin', { id, enabled }),

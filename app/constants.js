@@ -39,9 +39,7 @@ export default Object.freeze({
         isAutoLaunch:0,
         leftMenuPosition:'left',
         systemTheme:'system',
-        howLinkOpenMethod:"tuboshu",
-        clipboardWatchEnabled: false,
-        clipboardMaxHistory: 500
+        howLinkOpenMethod:"tuboshu"
     },
 
     SETTING:[

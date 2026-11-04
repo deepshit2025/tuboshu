@@ -61,7 +61,6 @@ onMounted(async () => {
   isAutoLaunch.value = getValue('isAutoLaunch', settings);
   defaultWindowSize.value = getValue('defaultWindowSize', settings);
   howLinkOpenMethod.value = getValue('howLinkOpenMethod', settings);
-  clipboardWatchEnabled.value = getValue('clipboardWatchEnabled', settings);
 })
 
 

@@ -31,11 +31,6 @@ const router = createRouter({
       component: () => import('@/views/GroupView.vue')
     },
     {
-      path: '/clipboard',
-      name: 'clipboard',
-      component: () => import('@/views/ClipboardView.vue')
-    },
-    {
       path: '/plugin',
       name: 'plugin',
       component: () => import('@/views/PluginMarketView.vue')
